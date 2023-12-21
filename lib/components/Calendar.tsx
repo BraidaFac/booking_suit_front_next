@@ -1,9 +1,10 @@
-'use client';
+"use client";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-} from '@heroicons/react/24/solid/index.js';
-import { formatMonth } from '../utils/date_formatter';
+} from "@heroicons/react/24/solid/index.js";
+import { Checkbox } from "@nextui-org/react";
+import { formatMonth } from "../utils/date_formatter";
 import {
   add,
   eachDayOfInterval,
@@ -14,112 +15,353 @@ import {
   parse,
   startOfToday,
   isBefore,
-} from 'date-fns';
-import { useState } from 'react';
-import { bg } from 'date-fns/locale';
-
+  isSameDay,
+} from "date-fns";
+import { useEffect, useState } from "react";
+import { useSuitContext } from "./SuitContext";
+import { Booking } from "../utils/Booking";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+  Input,
+} from "@nextui-org/react";
 function classNames(...classes: any) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 } /*  */
 
 function isFuture(day: any) {
   return isBefore(startOfToday(), day);
 }
 
-export default function Calendar(props: any) {
+export default function Calendar() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const today = startOfToday();
-  const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
-  const firstDayCurrentMonth = parse(currentMonth, 'MMM-yyyy', new Date());
+  const [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));
+  const firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
+  const [selectedDay, setSelectedDay] = useState<Date>();
+
+  //Suit Data
+  const [suit, setSuit] = useSuitContext();
+
+  //Booking Data
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [busyDaysLaundry, setBusyDaysLaundry] = useState<Date[]>([]);
+  const [busyDaysDressmaker, setBusyDaysDressmaker] = useState<Date[]>([]);
+  const [busyDaysPreparation, setBusyDaysPreparation] = useState<Date[]>([]);
 
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
   });
+
   function previousMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
-    setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
   function nextMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
-    setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
+  const fetchBookingbySuit = async () => {
+    const res = await fetch(`http://localhost:3001/booking/suit/${suit.id}`, {
+      method: "GET",
+    });
+    const data = await res.json();
+    setBookings(data);
+  };
 
+  const getBusyDays = async () => {
+    const res = await fetch(
+      `http://localhost:3001/booking/suit/${suit.id}/fechas`,
+      {
+        method: "GET",
+      }
+    );
+    const data = await res.json();
+    console.log(data);
+
+    const busyDaysLaundry = data.laundry.map((day: any) => {
+      return new Date(day);
+    });
+    setBusyDaysLaundry(busyDaysLaundry);
+    const busyDaysDressmaker = data.dressmaker.map((day: any) => {
+      return new Date(day);
+    });
+    setBusyDaysDressmaker(busyDaysDressmaker);
+    const busyDaysPreparation = data.preparation.map((day: any) => {
+      return new Date(day);
+    });
+    setBusyDaysPreparation(busyDaysPreparation);
+  };
+
+  useEffect(() => {
+    if (suit) {
+      try {
+        fetchBookingbySuit();
+        getBusyDays();
+      } catch (error) {
+        console.log(error); //TODO
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suit]);
   return (
-    <div className="">
-      <div className="flex flex-col md:mx-auto md:w-1/2  text-center px-2 my-2">
-        <h3 className="text-2xl px-2 text-white">Seleccione la fecha</h3>
-      </div>
-      <div className="mx-auto lg:w-4/5 bg-black">
-        <div className="flex items-center text-center">
-          <button
-            type="button"
-            onClick={previousMonth}
-            className="-my-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400"
-          >
-            <ChevronLeftIcon className="w-8 h-8" aria-hidden="true" />
-          </button>
-          <h2 className="flex-auto font-semibold text-2xl text-white ">
-            {formatMonth(firstDayCurrentMonth)}
-          </h2>
-
-          <button
-            onClick={nextMonth}
-            type="button"
-            className="-my-1.5 -mr-1.5 ml-2 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
-          >
-            <ChevronRightIcon className="w-8 h-8" aria-hidden="true" />
-          </button>
-        </div>
-        <div className="grid grid-cols-7 mt-10 text-xs leading-6 text-center text-red-400 ">
-          <div className="w-full ">D</div>
-          <div className="w-full ">L</div>
-          <div className="w-full ">M</div>
-          <div className="w-full ">M</div>
-          <div className="w-full ">J</div>
-          <div className="w-full ">V</div>
-          <div className="w-full ">S</div>
-        </div>
-        <div className="grid grid-cols-7 mt-2 text-sm gap-2 p-2">
-          {days.map((day, dayIdx) => (
-            <div
-              key={day.toString()}
-              className={classNames(
-                dayIdx === 0 && colStartClasses[getDay(day)],
-                'h-28 w-full border-solid border-2 border-white'
-              )}
-            >
+    <div className="col-span-9">
+      {!suit ? (
+        <div>Seleccione un traje</div>
+      ) : (
+        <>
+          <div className="flex flex-col md:mx-auto md:w-1/2  text-center my-2">
+            <h3 className="text-2xl px-2 text-black">Seleccione la fecha</h3>
+          </div>
+          <div className="">
+            <div className="flex items-center text-center">
               <button
                 type="button"
-                className={classNames(
-                  'text-white',
-                  isToday(day) && 'text-white',
-                  !isToday(day) && 'text-gray-900',
-                  isToday(day) && 'bg-primary',
-                  !isToday(day) && 'bg-booking-card',
-                  isToday(day) && 'font-semibold',
-                  isFuture(day) && 'bg-gray-400',
-                  isToday(day) && 'bg-red-300',
-                  'w-full h-full flex justify-start p-2'
-                )}
+                onClick={previousMonth}
+                className="-my-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400"
               >
-                <time dateTime={format(day, 'yyyy-MM-dd')}>
-                  {format(day, 'd')}
-                </time>
+                <ChevronLeftIcon className="w-8 h-8" aria-hidden="true" />
+              </button>
+              <h2 className="flex-auto font-semibold text-2xl text-white ">
+                {formatMonth(firstDayCurrentMonth)}
+              </h2>
+
+              <button
+                onClick={nextMonth}
+                type="button"
+                className="-my-1.5 -mr-1.5 ml-2 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
+              >
+                <ChevronRightIcon className="w-8 h-8" aria-hidden="true" />
               </button>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="grid grid-cols-7 mt-10 text-xs leading-6 text-center text-red-400 ">
+              <div className="w-full ">D</div>
+              <div className="w-full ">L</div>
+              <div className="w-full ">M</div>
+              <div className="w-full ">M</div>
+              <div className="w-full ">J</div>
+              <div className="w-full ">V</div>
+              <div className="w-full ">S</div>
+            </div>
+            <div className="grid grid-cols-7 mt-2 text-sm gap-2 p-2">
+              {days.map((day, dayIdx) => (
+                <div
+                  key={day.toString()}
+                  className={classNames(
+                    dayIdx === 0 && colStartClasses[getDay(day)],
+                    "h-28 w-full border-solid border-2 border-white"
+                  )}
+                >
+                  <button
+                    onClick={() => {
+                      //TODO VERIFICAR FECHAS DISPONIBLES
+                      setSelectedDay(day);
+                      onOpen();
+                    }}
+                    disabled={
+                      bookings.filter((booking) =>
+                        isSameDay(day, new Date(booking.booking_date))
+                      ).length > 0 ||
+                      busyDaysDressmaker.filter((busyDay) =>
+                        isSameDay(day, busyDay)
+                      ).length > 0 ||
+                      busyDaysLaundry.filter((busyDay) =>
+                        isSameDay(day, busyDay)
+                      ).length > 0 ||
+                      busyDaysPreparation.filter((busyDay) =>
+                        isSameDay(day, busyDay)
+                      ).length > 0
+                    }
+                    type="button"
+                    className={classNames(
+                      "text-white",
+                      isToday(day) && "text-white",
+                      !isToday(day) && "text-gray-900",
+                      isToday(day) && "bg-primary",
+                      !isToday(day) && "bg-booking-card",
+                      isToday(day) && "font-semibold",
+                      isFuture(day) && "bg-green-400",
+                      !isFuture(day) && "bg-gray-300",
+                      isToday(day) && "bg-blue-400",
+                      bookings.filter((booking) =>
+                        isSameDay(day, new Date(booking.booking_date))
+                      ).length > 0 && "bg-red-400",
+                      busyDaysDressmaker.filter((busyDay) =>
+                        isSameDay(day, busyDay)
+                      ).length > 0 && "bg-yellow-400",
+                      busyDaysLaundry.filter((busyDay) =>
+                        isSameDay(day, busyDay)
+                      ).length > 0 && "bg-yellow-400",
+                      busyDaysPreparation.filter((busyDay) =>
+                        isSameDay(day, busyDay)
+                      ).length > 0 && "bg-yellow-400",
+
+                      "w-full h-full p-2"
+                    )}
+                  >
+                    <div className="flex flex-col items-start h-full w-full">
+                      <time dateTime={format(day, "yyyy-MM-dd")}>
+                        {format(day, "d")}
+                      </time>
+                      {bookings
+                        .filter((booking) =>
+                          isSameDay(day, new Date(booking.booking_date))
+                        )
+                        .map((booking) => (
+                          <div className="self-center mt-3" key={booking.id}>
+                            {booking.client_name}
+                          </div>
+                        ))}
+                      {busyDaysDressmaker
+                        .filter((busyDay) => isSameDay(day, busyDay))
+                        .map((booking) => (
+                          <div
+                            className="self-center mt-3"
+                            key={day.toISOString()}
+                          >
+                            {" "}
+                            MODISTA
+                          </div>
+                        ))}
+
+                      {busyDaysLaundry
+                        .filter((busyDay) => isSameDay(day, busyDay))
+                        .map((booking) => (
+                          <div
+                            className="self-center mt-3"
+                            key={day.toISOString()}
+                          >
+                            LAVANDERIA
+                          </div>
+                        ))}
+                      {busyDaysPreparation
+                        .filter((busyDay) => isSameDay(day, busyDay))
+                        .map((booking) => (
+                          <div
+                            className="self-center mt-3"
+                            key={day.toISOString()}
+                          >
+                            {" "}
+                            EN LOCAL
+                          </div>
+                        ))}
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        placement="top-center"
+        backdrop="blur"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Reservar un traje
+              </ModalHeader>
+              <ModalBody>
+                <form id="booking-form" className="flex flex-col gap-3 ">
+                  <Input label="DNI Cliente" name="client_dni"></Input>
+                  <Input label="Nombre Cliente" name="client_name"></Input>
+                  <Input label="Telefono Cliente" name="client_phone"></Input>
+
+                  <Input label="Traje" name="suit_id" value={suit.id}></Input>
+                  <Input label="Color" value={suit.color} type="text"></Input>
+                  <Input
+                    label="Fecha evento"
+                    value={format(selectedDay, "yyyy-MM-dd")}
+                    type="text"
+                    name="booking_date"
+                  ></Input>
+                  <label className="text-black">Modista</label>
+                  <input type="checkbox" name="dressmaker" />
+                </form>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Cancelar
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    const form = document.getElementById(
+                      "booking-form"
+                    ) as HTMLFormElement;
+                    if (form) {
+                      const formData = new FormData(form);
+                      const suit_id = formData.get("suit_id");
+                      const booking_date = formData.get("booking_date");
+                      const dressmaker = formData.get("dressmaker")
+                        ? true
+                        : false;
+                      const client_dni = formData.get("client_dni");
+                      const client_name = formData.get("client_name");
+                      const client_phone = formData.get("client_phone");
+
+                      try {
+                        const response = await fetch(
+                          "http://localhost:3001/booking",
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              suit: {
+                                id: suit_id,
+                              },
+                              booking_date,
+                              dressmaker,
+                              client_dni,
+                              client_name,
+                              client_phone,
+                            }),
+                          }
+                        );
+                        if (response.status === 201) {
+                          fetchBookingbySuit();
+                          getBusyDays();
+                          onClose();
+                        } else {
+                          alert("Error al reservar");
+                          console.log(await response.json());
+                        }
+                      } catch (error) {
+                        console.log(error);
+                      }
+                    }
+                  }}
+                >
+                  Reservar
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }
 
 let colStartClasses = [
-  '',
-  'col-start-2',
-  'col-start-3',
-  'col-start-4',
-  'col-start-5',
-  'col-start-6',
-  'col-start-7',
+  "",
+  "col-start-2",
+  "col-start-3",
+  "col-start-4",
+  "col-start-5",
+  "col-start-6",
+  "col-start-7",
 ];
