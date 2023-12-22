@@ -58,7 +58,15 @@ const SideBar = () => {
     }
   }, [selectedValue]);
   return (
-    <div className="col-span-3 bg-white mt-10">
+    <div className="col-span-3 mt-10 ">
+      {suit && (
+        <div className="">
+          <p className="text-2xl text-center text-white inline">
+            Traje {suit.id}
+          </p>
+          <p className="text-2xl text-red-700 inline"> ESTADO: {suit.state}</p>
+        </div>
+      )}
       {loading ? (
         <p>Loading...</p>
       ) : (

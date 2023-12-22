@@ -5,10 +5,17 @@ export interface Booking {
   booking_created: Date;
   end_at: Date;
   booking_date: Date;
-  booking_state: "ACTIVED" | "CANCELED" | "COMPLETED";
+  booking_state: BookingState;
   suit: Suit;
   client_dni: string;
   client_name: string;
   client_phone: string;
   dressmaker: boolean;
+}
+
+export enum BookingState {
+  ACTIVED = "ACTIVED",
+  CANCELED = "CANCELED",
+  COMPLETED = "COMPLETED",
+  INPROGRESS = "INPROGRESS",
 }

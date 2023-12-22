@@ -3,7 +3,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/solid/index.js";
-import { Checkbox } from "@nextui-org/react";
+import { Textarea } from "@nextui-org/react";
 import { formatMonth } from "../utils/date_formatter";
 import {
   add,
@@ -19,7 +19,8 @@ import {
 } from "date-fns";
 import { useEffect, useState } from "react";
 import { useSuitContext } from "./SuitContext";
-import { Booking } from "../utils/Booking";
+import { Booking, BookingState } from "../utils/Booking";
+import { SuitState } from "../utils/Suit";
 import {
   Modal,
   ModalContent,
@@ -30,6 +31,7 @@ import {
   useDisclosure,
   Input,
 } from "@nextui-org/react";
+import { on } from "events";
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 } /*  */
@@ -44,6 +46,8 @@ export default function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));
   const firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
   const [selectedDay, setSelectedDay] = useState<Date>();
+  const [selectedBookingToCancel, setSelectedBookingToCancel] =
+    useState<Booking>();
 
   //Suit Data
   const [suit, setSuit] = useSuitContext();
@@ -54,11 +58,11 @@ export default function Calendar() {
   const [busyDaysDressmaker, setBusyDaysDressmaker] = useState<Date[]>([]);
   const [busyDaysPreparation, setBusyDaysPreparation] = useState<Date[]>([]);
 
+  //Calendar functions
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
   });
-
   function previousMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
     setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
@@ -67,11 +71,14 @@ export default function Calendar() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
     setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
+
+  //Booking functions
   const fetchBookingbySuit = async () => {
     const res = await fetch(`http://localhost:3001/booking/suit/${suit.id}`, {
       method: "GET",
     });
     const data = await res.json();
+
     setBookings(data);
   };
 
@@ -83,7 +90,6 @@ export default function Calendar() {
       }
     );
     const data = await res.json();
-    console.log(data);
 
     const busyDaysLaundry = data.laundry.map((day: any) => {
       return new Date(day);
@@ -110,14 +116,29 @@ export default function Calendar() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suit]);
+
+  //Verification of day
+  const verifyDay = (day: Date) => {
+    const index = bookings.findIndex((booking) =>
+      isSameDay(day, new Date(booking.booking_date))
+    );
+    if (index !== -1) setSelectedBookingToCancel(bookings[index]);
+    else {
+      setSelectedDay(day);
+    }
+  };
   return (
-    <div className="col-span-9">
+    <div className="col-span-9 w-11/12 mx-auto">
       {!suit ? (
-        <div>Seleccione un traje</div>
+        <div className="w-full h-full">
+          <p className="text-4xl text-white text-center mt-28">
+            Seleccione un traje
+          </p>
+        </div>
       ) : (
         <>
           <div className="flex flex-col md:mx-auto md:w-1/2  text-center my-2">
-            <h3 className="text-2xl px-2 text-black">Seleccione la fecha</h3>
+            <h3 className="text-2xl px-2 text-white">Seleccione la fecha</h3>
           </div>
           <div className="">
             <div className="flex items-center text-center">
@@ -161,13 +182,10 @@ export default function Calendar() {
                   <button
                     onClick={() => {
                       //TODO VERIFICAR FECHAS DISPONIBLES
-                      setSelectedDay(day);
+                      verifyDay(day);
                       onOpen();
                     }}
                     disabled={
-                      bookings.filter((booking) =>
-                        isSameDay(day, new Date(booking.booking_date))
-                      ).length > 0 ||
                       busyDaysDressmaker.filter((busyDay) =>
                         isSameDay(day, busyDay)
                       ).length > 0 ||
@@ -176,7 +194,12 @@ export default function Calendar() {
                       ).length > 0 ||
                       busyDaysPreparation.filter((busyDay) =>
                         isSameDay(day, busyDay)
-                      ).length > 0
+                      ).length > 0 ||
+                      (!isFuture(day) &&
+                        !isToday(day) &&
+                        bookings.filter((booking) =>
+                          isSameDay(day, new Date(booking.booking_date))
+                        ).length === 0)
                     }
                     type="button"
                     className={classNames(
@@ -187,7 +210,6 @@ export default function Calendar() {
                       !isToday(day) && "bg-booking-card",
                       isToday(day) && "font-semibold",
                       isFuture(day) && "bg-green-400",
-                      !isFuture(day) && "bg-gray-300",
                       isToday(day) && "bg-blue-400",
                       bookings.filter((booking) =>
                         isSameDay(day, new Date(booking.booking_date))
@@ -232,7 +254,7 @@ export default function Calendar() {
 
                       {busyDaysLaundry
                         .filter((busyDay) => isSameDay(day, busyDay))
-                        .map((booking) => (
+                        .map(() => (
                           <div
                             className="self-center mt-3"
                             key={day.toISOString()}
@@ -242,7 +264,7 @@ export default function Calendar() {
                         ))}
                       {busyDaysPreparation
                         .filter((busyDay) => isSameDay(day, busyDay))
-                        .map((booking) => (
+                        .map(() => (
                           <div
                             className="self-center mt-3"
                             key={day.toISOString()}
@@ -264,92 +286,274 @@ export default function Calendar() {
         onOpenChange={onOpenChange}
         placement="top-center"
         backdrop="blur"
+        onClose={() => {
+          setSelectedDay(undefined);
+          setSelectedBookingToCancel(undefined);
+        }}
       >
         <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Reservar un traje
-              </ModalHeader>
-              <ModalBody>
-                <form id="booking-form" className="flex flex-col gap-3 ">
-                  <Input label="DNI Cliente" name="client_dni"></Input>
-                  <Input label="Nombre Cliente" name="client_name"></Input>
-                  <Input label="Telefono Cliente" name="client_phone"></Input>
+          {(onClose) =>
+            selectedDay ? (
+              <>
+                <ModalHeader className="flex flex-col gap-1">
+                  Reservar un traje
+                </ModalHeader>
+                <ModalBody>
+                  <form id="booking-form" className="flex flex-col gap-3 ">
+                    <Input
+                      isRequired
+                      label="DNI Cliente"
+                      name="client_dni"
+                    ></Input>
+                    <Input
+                      isRequired
+                      label="Nombre Cliente"
+                      name="client_name"
+                    ></Input>
+                    <Input
+                      isRequired
+                      label="Telefono Cliente"
+                      name="client_phone"
+                    ></Input>
+                    <Input
+                      isRequired
+                      label="Cuenta asociada"
+                      name="account_related"
+                    ></Input>
+                    <Input
+                      isRequired
+                      label="Traje"
+                      name="suit_id"
+                      value={suit.id}
+                    ></Input>
+                    <Input
+                      isRequired
+                      label="Color"
+                      value={suit.color}
+                      type="text"
+                    ></Input>
+                    <Input
+                      isRequired
+                      label="Fecha evento"
+                      value={format(selectedDay, "yyyy-MM-dd")}
+                      type="text"
+                      name="booking_date"
+                    ></Input>
+                    <Textarea
+                      isRequired
+                      label="Observaciones"
+                      labelPlacement="inside"
+                      className="max-w-xs"
+                      name="observations"
+                    />
+                    <div className="flex flex-row gap-3 p-2">
+                      <label className="text-black ">Modista</label>
+                      <input
+                        className="w-6 h-6"
+                        type="checkbox"
+                        name="dressmaker"
+                      />
+                    </div>
+                  </form>
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="danger" variant="light" onPress={onClose}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      const form = document.getElementById(
+                        "booking-form"
+                      ) as HTMLFormElement;
+                      if (form) {
+                        const formData = new FormData(form);
+                        const suit_id = formData.get("suit_id");
+                        const booking_date = formData.get("booking_date");
+                        const dressmaker = formData.get("dressmaker")
+                          ? true
+                          : false;
+                        const client_dni = formData.get("client_dni");
+                        const client_name = formData.get("client_name");
+                        const client_phone = formData.get("client_phone");
+                        const observations = formData.get("observations");
+                        const account_related = formData.get("account_related");
 
-                  <Input label="Traje" name="suit_id" value={suit.id}></Input>
-                  <Input label="Color" value={suit.color} type="text"></Input>
-                  <Input
-                    label="Fecha evento"
-                    value={format(selectedDay, "yyyy-MM-dd")}
-                    type="text"
-                    name="booking_date"
-                  ></Input>
-                  <label className="text-black">Modista</label>
-                  <input type="checkbox" name="dressmaker" />
-                </form>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Cancelar
-                </Button>
-                <Button
-                  color="primary"
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    const form = document.getElementById(
-                      "booking-form"
-                    ) as HTMLFormElement;
-                    if (form) {
-                      const formData = new FormData(form);
-                      const suit_id = formData.get("suit_id");
-                      const booking_date = formData.get("booking_date");
-                      const dressmaker = formData.get("dressmaker")
-                        ? true
-                        : false;
-                      const client_dni = formData.get("client_dni");
-                      const client_name = formData.get("client_name");
-                      const client_phone = formData.get("client_phone");
-
+                        try {
+                          const response = await fetch(
+                            "http://localhost:3001/booking",
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({
+                                suit: {
+                                  id: suit_id,
+                                },
+                                booking_date,
+                                dressmaker,
+                                client_dni,
+                                client_name,
+                                client_phone,
+                                observations,
+                                account_related,
+                              }),
+                            }
+                          );
+                          if (response.status === 201) {
+                            fetchBookingbySuit();
+                            getBusyDays();
+                            onClose();
+                          } else {
+                            alert("Error al reservar");
+                            console.log(await response.json());
+                          }
+                        } catch (error) {
+                          console.log(error);
+                        }
+                      }
+                    }}
+                  >
+                    Reservar
+                  </Button>
+                </ModalFooter>
+              </>
+            ) : (
+              <>
+                <ModalHeader className="flex flex-col gap-1">
+                  Acciones
+                </ModalHeader>
+                <ModalBody>
+                  <Button
+                    isDisabled={suit.state === SuitState.RETIRADO}
+                    color="primary"
+                    variant="light"
+                    onPress={async () => {
                       try {
-                        const response = await fetch(
-                          "http://localhost:3001/booking",
+                        const suitResponse = await fetch(
+                          `http://localhost:3001/suit/${suit.id}`,
                           {
-                            method: "POST",
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ state: SuitState.RETIRADO }),
+                          }
+                        );
+
+                        const bookingResponse = await fetch(
+                          `http://localhost:3001/booking/${selectedBookingToCancel?.id}`,
+                          {
+                            method: "PATCH",
                             headers: {
                               "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
-                              suit: {
-                                id: suit_id,
-                              },
-                              booking_date,
-                              dressmaker,
-                              client_dni,
-                              client_name,
-                              client_phone,
+                              booking_state: BookingState.INPROGRESS,
                             }),
                           }
                         );
-                        if (response.status === 201) {
-                          fetchBookingbySuit();
-                          getBusyDays();
+
+                        if (
+                          suitResponse.status === 200 &&
+                          bookingResponse.status === 200
+                        ) {
+                          const suitUpdated = await suitResponse.json();
+                          setSuit(suitUpdated);
+                          await fetchBookingbySuit();
                           onClose();
                         } else {
-                          alert("Error al reservar");
-                          console.log(await response.json());
+                          alert("Error al retirar");
                         }
                       } catch (error) {
                         console.log(error);
+                        // Muestra el mensaje de error en caso de excepción
                       }
-                    }
-                  }}
-                >
-                  Reservar
-                </Button>
-              </ModalFooter>
-            </>
-          )}
+                    }}
+                  >
+                    RETIRO
+                  </Button>
+                  <Button
+                    isDisabled={suit.state === SuitState.ENLOCAL}
+                    color="primary"
+                    variant="light"
+                    onPress={async () => {
+                      try {
+                        const suitResponse = await fetch(
+                          `http://localhost:3001/suit/${suit.id}`,
+                          {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ state: SuitState.ENLOCAL }),
+                          }
+                        );
+
+                        const bookingResponse = await fetch(
+                          `http://localhost:3001/booking/${selectedBookingToCancel?.id}`,
+                          {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              booking_state: BookingState.COMPLETED,
+                            }),
+                          }
+                        );
+
+                        if (
+                          suitResponse.status === 200 &&
+                          bookingResponse.status === 200
+                        ) {
+                          if (selectedBookingToCancel?.dressmaker) {
+                            alert("Recordar que fue con modista");
+                          }
+                          const suitUpdated = await suitResponse.json();
+                          setSuit(suitUpdated);
+                          await fetchBookingbySuit();
+                          onClose();
+                        } else {
+                          alert("Error al retirar");
+                        }
+                      } catch (error) {
+                        console.log(error);
+                        // Muestra el mensaje de error en caso de excepción
+                      }
+                    }}
+                  >
+                    DEVOLVIO
+                  </Button>
+                  <Button
+                    color="danger"
+                    variant="light"
+                    onPress={async (e) => {
+                      const response = await fetch(
+                        `http://localhost:3001/booking/${selectedBookingToCancel?.id}`,
+                        {
+                          method: "DELETE",
+                        }
+                      );
+                      console.log(await response.json());
+
+                      if (response.status === 200) {
+                        await fetchBookingbySuit();
+                        await getBusyDays();
+                        onClose();
+                      } else {
+                        alert("Error al cancelar");
+                      }
+                    }}
+                  >
+                    CANCELAR
+                  </Button>
+                </ModalBody>
+              </>
+            )
+          }
         </ModalContent>
       </Modal>
     </div>

@@ -3,12 +3,17 @@
 @tailwind utilities;
 
 :root {
+  font-family: "Quicksand", sans-serif !important;
+  background-color: black;
+  width: 100vw;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-  }
+@font-face {
+  font-family: "Quicksand";
+  src: url("../public/static/Quicksand-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
-
-body {
+.navigation header {
+  max-width: none;
 }
