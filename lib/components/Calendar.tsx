@@ -206,38 +206,38 @@ export default function Calendar() {
                       "text-white",
                       isToday(day) && "text-white",
                       !isToday(day) && "text-gray-900",
-                      isToday(day) && "bg-primary",
-                      !isToday(day) && "bg-booking-card",
-                      isToday(day) && "font-semibold",
+                      "font-semibold",
                       isFuture(day) && "bg-green-400",
-                      isToday(day) && "bg-blue-400",
                       bookings.filter((booking) =>
                         isSameDay(day, new Date(booking.booking_date))
                       ).length > 0 && "bg-red-400",
                       busyDaysDressmaker.filter((busyDay) =>
-                        isSameDay(day, busyDay)
+                        isSameDay(day, new Date(busyDay))
                       ).length > 0 && "bg-yellow-400",
                       busyDaysLaundry.filter((busyDay) =>
-                        isSameDay(day, busyDay)
+                        isSameDay(day, new Date(busyDay))
                       ).length > 0 && "bg-yellow-400",
                       busyDaysPreparation.filter((busyDay) =>
-                        isSameDay(day, busyDay)
+                        isSameDay(day, new Date(busyDay))
                       ).length > 0 && "bg-yellow-400",
-
-                      "w-full h-full p-2"
+                      "w-full h-full p-2",
+                      isToday(day) && "bg-blue-400"
                     )}
                   >
                     <div className="flex flex-col items-start h-full w-full">
                       <time dateTime={format(day, "yyyy-MM-dd")}>
                         {format(day, "d")}
                       </time>
+                      {isToday(day) && <p className="text-red-800">HOY</p>}
+
                       {bookings
                         .filter((booking) =>
                           isSameDay(day, new Date(booking.booking_date))
                         )
                         .map((booking) => (
                           <div className="self-center mt-3" key={booking.id}>
-                            {booking.client_name}
+                            <p>{booking.client_name}</p>
+                            <p>{booking.client_phone}</p>
                           </div>
                         ))}
                       {busyDaysDressmaker
@@ -408,7 +408,6 @@ export default function Calendar() {
                             onClose();
                           } else {
                             alert("Error al reservar");
-                            console.log(await response.json());
                           }
                         } catch (error) {
                           console.log(error);
@@ -420,7 +419,8 @@ export default function Calendar() {
                   </Button>
                 </ModalFooter>
               </>
-            ) : (
+            ) : selectedBookingToCancel?.booking_state !==
+              BookingState.COMPLETED ? (
               <>
                 <ModalHeader className="flex flex-col gap-1">
                   Acciones
@@ -452,6 +452,7 @@ export default function Calendar() {
                             },
                             body: JSON.stringify({
                               booking_state: BookingState.INPROGRESS,
+                              booking_retired_suit: new Date(),
                             }),
                           }
                         );
@@ -501,6 +502,7 @@ export default function Calendar() {
                             },
                             body: JSON.stringify({
                               booking_state: BookingState.COMPLETED,
+                              booking_return_suit: new Date(),
                             }),
                           }
                         );
@@ -551,6 +553,12 @@ export default function Calendar() {
                     CANCELAR
                   </Button>
                 </ModalBody>
+              </>
+            ) : (
+              <>
+                <ModalHeader className="flex flex-col gap-1">
+                  La reserva ya se completo
+                </ModalHeader>
               </>
             )
           }

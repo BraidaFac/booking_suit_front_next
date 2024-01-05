@@ -43,6 +43,11 @@ export default function Menu() {
             Planillas
           </Link>
         </NavbarItem>
+        <NavbarItem isActive={path === "/reservas"}>
+          <Link className="text-white" href="/reservas" aria-current="page">
+            Reservas
+          </Link>
+        </NavbarItem>
       </NavbarContent>
 
       <NavbarContent justify="end">

@@ -1,5 +1,5 @@
 "use client";
-import { NextUIProvider } from "@nextui-org/react";
+import { NextUIProvider, Spinner } from "@nextui-org/react";
 import {
   Table,
   TableHeader,
@@ -10,17 +10,17 @@ import {
   User,
   Chip,
   Tooltip,
-  getKeyValue,
 } from "@nextui-org/react";
 import { EditIcon } from "../../lib/components/EditIcon";
 import { useCallback, useEffect, useState } from "react";
 import { Booking } from "@/lib/utils/Booking";
+import { format } from "date-fns/esm";
 
-const statusColorMap = {
+const statusColorMap: {} = {
   ACTIVED: "success",
   CANCELED: "danger",
   INPROGRESS: "warning",
-  COMPLETED: "success",
+  COMPLETED: "primary",
 };
 const columns = [
   {
@@ -32,8 +32,21 @@ const columns = [
     uid: "account_related",
   },
   {
-    name: "Fecha",
+    name: "Traje",
+    uid: "suit",
+  },
+
+  {
+    name: "Fecha de reserva",
     uid: "booking_date",
+  },
+  {
+    name: "Fecha de retiro",
+    uid: "booking_retired_suit",
+  },
+  {
+    name: "Fecha de devolucion",
+    uid: "booking_return_suit",
   },
   {
     name: "Estado",
@@ -45,11 +58,12 @@ const columns = [
   },
 ];
 export default function Planillas() {
+  const [isLoading, setIsLoading] = useState(true);
   const fetchBooking = async () => {
     const response = await fetch("http://localhost:3001/booking");
     const data = await response.json();
-
     setBookings(data);
+    setIsLoading(false);
   };
   const [bookings, setBookings] = useState<Booking[]>([]);
   useEffect(() => {
@@ -61,22 +75,47 @@ export default function Planillas() {
 
     switch (columnKey) {
       case "client_name":
-        return (
-          <User description={booking.client_name} name={cellValue}>
-            {booking.client_name}
-          </User>
-        );
+        return <User name={cellValue}>{booking.client_name}</User>;
       case "booking_date":
         return (
           <div className="flex flex-col">
-            <p className="text-bold text-sm capitalize">{cellValue}</p>
+            <p className="text-bold text-sm capitalize">
+              {format(new Date(cellValue), "P")}
+            </p>
           </div>
         );
+      case "suit":
+        return (
+          <div className="flex flex-col">
+            <p className="text-bold text-sm capitalize">{cellValue.id}</p>
+          </div>
+        );
+      case "booking_retired_suit":
+        return (
+          <div className="flex flex-col">
+            <p className="text-bold text-sm capitalize">
+              {cellValue ? format(new Date(cellValue), "P") : "No retirado"}
+            </p>
+          </div>
+        );
+      case "booking_return_suit":
+        return (
+          <div className="flex flex-col">
+            <p className="text-bold text-sm capitalize">
+              {cellValue ? format(new Date(cellValue), "P") : "No devuelto"}
+            </p>
+          </div>
+        );
+
       case "booking_state":
         return (
           <Chip
             className="capitalize"
-            color={statusColorMap[booking.booking_state]}
+            color={
+              statusColorMap[
+                booking.booking_state as keyof typeof statusColorMap
+              ]
+            }
             size="sm"
             variant="flat"
           >
@@ -99,7 +138,17 @@ export default function Planillas() {
   }, []);
 
   return (
-    <Table aria-label="Example table with custom cells">
+    <Table
+      aria-label="Example table with custom cells"
+      isHeaderSticky
+      bottomContent={
+        isLoading ? (
+          <div className="flex w-full justify-center">
+            <Spinner color="danger" />
+          </div>
+        ) : null
+      }
+    >
       <TableHeader columns={columns}>
         {(column) => (
           <TableColumn
@@ -110,7 +159,12 @@ export default function Planillas() {
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody items={bookings}>
+      <TableBody
+        items={bookings}
+        isLoading={isLoading}
+        emptyContent={isLoading ? null : "No hay reservas"}
+        loadingContent={<Spinner color="white" />}
+      >
         {(item) => (
           <TableRow key={item.id}>
             {(columnKey) => (

@@ -9,6 +9,7 @@ export default function Home() {
         <SideBar />
         <Calendar />
       </main>
+      ￼ Cuenta asociada
     </NextUIProvider>
   );
 }
