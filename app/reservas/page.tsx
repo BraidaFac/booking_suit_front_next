@@ -23,7 +23,9 @@ const statusColorMap: {} = {
   INPROGRESS: 'warning',
   COMPLETED: 'primary',
 };
-const getStatusBooking = (status) => {
+const getStatusBooking = (
+  status: 'ACTIVED' | 'CANCELED' | 'INPROGRESS' | 'COMPLETED'
+) => {
   switch (status) {
     case 'ACTIVED':
       return 'Activo';
