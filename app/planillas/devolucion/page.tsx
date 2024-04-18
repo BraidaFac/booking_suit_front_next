@@ -60,6 +60,7 @@ export default function Devolucion() {
           actions: (
             <Button
               size="sm"
+              className="w-8"
               color="primary"
               onClick={async () => {
                 const res = await fetch(
@@ -151,8 +152,8 @@ export default function Devolucion() {
           <Spinner color="danger"></Spinner>
         </div>
       ) : (
-        <main>
-          <div>
+        <div>
+          <div className="px-2">
             <div className="header">
               <p className="text-3xl text-red-800 text-center">
                 Recordar devolucion
@@ -194,7 +195,7 @@ export default function Devolucion() {
               </Table>
             </div>
           </div>
-        </main>
+        </div>
       )}
     </>
   );

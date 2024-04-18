@@ -137,13 +137,13 @@ export default function Planillas() {
           <Spinner color="danger"></Spinner>
         </div>
       ) : (
-        <main>
+        <div>
           <div className="header">
             <p className="text-3xl text-red-800 text-center">
               Llevar Lavanderia
             </p>
           </div>
-          <div className="w-1/2 mx-auto">
+          <div className="px-2 mx-auto">
             <Table
               aria-label="Example table with dynamic content"
               isHeaderSticky
@@ -178,7 +178,7 @@ export default function Planillas() {
               </TableBody>
             </Table>
           </div>
-        </main>
+        </div>
       )}
     </>
   );

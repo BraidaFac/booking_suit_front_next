@@ -228,14 +228,14 @@ export default function RetirarLavanderia() {
           <Spinner color="danger"></Spinner>
         </div>
       ) : (
-        <main className="flex flex-row">
-          <div className="w-1/2">
+        <main className="flex flex-col w-full">
+          <div className="w-full px-2">
             <div className="header">
               <p className="text-3xl text-red-800 text-center">
                 Retirar Lavanderia
               </p>
             </div>
-            <div className="w-3/4 mx-auto">
+            <div className="">
               <Table
                 aria-label="Example table with dynamic content"
                 isHeaderSticky
@@ -273,13 +273,13 @@ export default function RetirarLavanderia() {
               </Table>
             </div>
           </div>
-          <div className="w-1/2">
+          <div className="w-full p-2">
             <div className="header">
               <p className="text-3xl text-red-800 text-center">
                 Trajes en lavanderia
               </p>
             </div>
-            <div className="w-3/4 mx-auto">
+            <div className="">
               <Table
                 aria-label="Example table with dynamic content"
                 isHeaderSticky

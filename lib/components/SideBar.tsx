@@ -70,7 +70,7 @@ const SideBar = () => {
   return (
     <div
       id="sidebar"
-      className={`fixed top-32 h-full w-full bg-gray-200 rounded-lg  transform transition-transform  ${
+      className={`fixed top-32 h-full w-full bg-gray-500 rounded-lg  transform transition-transform  ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >

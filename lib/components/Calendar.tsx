@@ -142,17 +142,16 @@ export default function Calendar() {
         </div>
       ) : (
         <>
-          <div>
+          <div className="">
             <h1 className="text-4xl text-white text-left mt-10">
               Traje {suit.id}
             </h1>
             <h2 className="text-2xl text-white text-left">
-              Estado: {suit.state}
+              Estado:{' '}
+              <span className="text-red-700">{getState(suit.state)}</span>
             </h2>
           </div>
-          <div className="flex flex-col md:mx-auto md:w-1/2  text-center my-2">
-            <h3 className="text-2xl px-2 text-white">Seleccione la fecha</h3>
-          </div>
+
           <div className="">
             <div className="flex items-center text-center">
               <button
@@ -298,7 +297,7 @@ export default function Calendar() {
         onOpenChange={onOpenChange}
         placement="center"
         backdrop="blur"
-        className=""
+        className={`${selectedDay ? 'h-5/6' : ''} overflow-auto`}
         onClose={() => {
           setFormError(false);
           setSelectedDay(undefined);
