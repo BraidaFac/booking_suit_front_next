@@ -14,12 +14,12 @@ import Filter from './Filter';
 import { useSideBarState } from '../utils/SideBarState';
 import { API_BACKEND } from '../utils/constanst';
 
-const SideBar = ({ isOpen }) => {
+const SideBar = () => {
   const [suits, setSuits] = useState<Suit[]>([]);
   const [loading, setLoading] = useState(true);
   const { suit, setSuit } = useSuitContext();
   const [selectedValue, setSelectedValue] = useState();
-  const { setIsOpen } = useSideBarState();
+  const { setIsOpen, isOpen } = useSideBarState();
 
   //input filter
 
@@ -87,7 +87,7 @@ const SideBar = ({ isOpen }) => {
               variant="flat"
               disallowEmptySelection
               selectionMode="single"
-              onSelectionChange={(selected) => {
+              onSelectionChange={(selected: any) => {
                 setSelectedValue(selected.currentKey);
               }}
             >

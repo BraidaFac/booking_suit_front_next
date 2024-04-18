@@ -76,7 +76,7 @@ export default function Home() {
           >
             {isOpen ? 'Ocultar' : 'Trajes'}
           </Button>
-          <SideBar isOpen={isOpen} />
+          <SideBar />
           <Calendar />
         </div>
       )}
