@@ -133,7 +133,7 @@ export default function Reservas() {
   }, []);
 
   const renderCell = useCallback((booking: Booking, columnKey: any) => {
-    const cellValue = booking[columnKey];
+    const cellValue = (booking as any)[columnKey];
 
     switch (columnKey) {
       case 'client_name':
