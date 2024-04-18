@@ -58,22 +58,25 @@ export default function RetirarLavanderia() {
 
     setSuitInLoundry(
       suitsInLoundry.map((suit: Suit) => {
-        const soon_booking_date = suit.bookings.reduce((acc, booking) => {
-          const date_booking = new Date(booking.booking_date).getTime();
-          const acc_date = acc
-            ? new Date(acc.booking_date).getTime()
-            : Infinity;
+        const soon_booking_date = suit.bookings.reduce(
+          (acc: Booking | undefined, booking) => {
+            const date_booking = new Date(booking.booking_date).getTime();
+            const acc_date = acc
+              ? new Date(acc.booking_date).getTime()
+              : Infinity;
 
-          if (
-            date_booking > new Date().getTime() &&
-            date_booking < acc_date &&
-            booking.booking_state === BookingState.ACTIVED
-          ) {
-            return booking;
-          } else {
-            return acc;
-          }
-        }, undefined)?.booking_date;
+            if (
+              date_booking > new Date().getTime() &&
+              date_booking < acc_date &&
+              booking.booking_state === BookingState.ACTIVED
+            ) {
+              return booking;
+            } else {
+              return acc;
+            }
+          },
+          undefined
+        )?.booking_date;
         return {
           key: suit.id,
           suit_name: suit.id,
@@ -111,24 +114,25 @@ export default function RetirarLavanderia() {
     );
     setSuitToTakeLoundry(
       suitsToTakeLoundry.map((suit: Suit) => {
-        console.log(suit);
+        const soon_booking_date = suit.bookings.reduce(
+          (acc: Booking | undefined, booking) => {
+            const date_booking = new Date(booking.booking_date).getTime();
+            const acc_date = acc
+              ? new Date(acc.booking_date).getTime()
+              : Infinity;
 
-        const soon_booking_date = suit.bookings.reduce((acc, booking) => {
-          const date_booking = new Date(booking.booking_date).getTime();
-          const acc_date = acc
-            ? new Date(acc.booking_date).getTime()
-            : Infinity;
-
-          if (
-            date_booking > new Date().getTime() &&
-            date_booking < acc_date &&
-            booking.booking_state === BookingState.ACTIVED
-          ) {
-            return booking;
-          } else {
-            return acc;
-          }
-        }, undefined)?.booking_date;
+            if (
+              date_booking > new Date().getTime() &&
+              date_booking < acc_date &&
+              booking.booking_state === BookingState.ACTIVED
+            ) {
+              return booking;
+            } else {
+              return acc;
+            }
+          },
+          undefined
+        )?.booking_date;
         return {
           key: suit.id,
           suit_name: suit.id,
