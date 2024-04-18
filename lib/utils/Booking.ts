@@ -1,4 +1,4 @@
-import { Suit } from "./Suit";
+import { Suit } from './Suit';
 
 export interface Booking {
   id: number;
@@ -12,12 +12,13 @@ export interface Booking {
   client_dni: string;
   client_name: string;
   client_phone: string;
+  observations: string;
   dressmaker: boolean;
 }
 
 export enum BookingState {
-  ACTIVED = "ACTIVED",
-  CANCELED = "CANCELED",
-  COMPLETED = "COMPLETED",
-  INPROGRESS = "INPROGRESS",
+  ACTIVED = 'ACTIVED',
+  CANCELED = 'CANCELED',
+  COMPLETED = 'COMPLETED',
+  INPROGRESS = 'INPROGRESS',
 }

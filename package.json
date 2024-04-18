@@ -14,11 +14,15 @@
     "@nextui-org/react": "^2.2.9",
     "@react-stately/data": "^3.11.0",
     "clsx": "^2.0.0",
+    "cookie-cutter": "^0.2.0",
+    "cookies-next": "^4.1.1",
     "date-fns": "^2.30.0",
     "framer-motion": "^10.16.16",
     "next": "14.0.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/node": "^20",

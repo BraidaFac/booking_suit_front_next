@@ -1,12 +1,12 @@
-"use client";
-import { createContext, useContext, useState } from "react";
+'use client';
+import { createContext, useContext, useState } from 'react';
 const Context = createContext();
 
 export function SuitContext({ children }) {
+  const [user, setUser] = useState();
   const [suit, setSuit] = useState();
-  return (
-    <Context.Provider value={[suit, setSuit]}>{children}</Context.Provider>
-  );
+  const contextValue = { user, setUser, suit, setSuit };
+  return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 }
 
 export function useSuitContext() {

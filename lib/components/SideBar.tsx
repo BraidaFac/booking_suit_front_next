@@ -1,21 +1,29 @@
-"use client";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Listbox, ListboxSection, ListboxItem } from "@nextui-org/react";
-import { ListboxWrapper } from "./ListboxWrapper";
-import { Suit } from "../utils/Suit";
-import React from "react";
-import { useSuitContext } from "./SuitContext";
-import Filter from "./Filter";
+'use client';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import {
+  Listbox,
+  ListboxSection,
+  ListboxItem,
+  Spinner,
+} from '@nextui-org/react';
+import { ListboxWrapper } from './ListboxWrapper';
+import { Suit } from '../utils/Suit';
+import React from 'react';
+import { useSuitContext } from './SuitContext';
+import Filter from './Filter';
+import { useSideBarState } from '../utils/SideBarState';
+import { API_BACKEND } from '../utils/constanst';
 
-const SideBar = () => {
+const SideBar = ({ isOpen }) => {
   const [suits, setSuits] = useState<Suit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-  const [suit, setSuit] = useSuitContext();
+  const { suit, setSuit } = useSuitContext();
+  const [selectedValue, setSelectedValue] = useState();
+  const { setIsOpen } = useSideBarState();
 
   //input filter
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
   };
@@ -31,13 +39,10 @@ const SideBar = () => {
     return filteredData;
   };
   const suitsToShow = filterData(suits, query);
-  const selectedValue = React.useMemo(
-    () => Array.from(selectedKeys).join(", "),
-    [selectedKeys]
-  );
+
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3001/suit");
+      const res = await fetch(`${API_BACKEND}/suit`);
       const data: Suit[] = await res.json();
       setSuits(data);
       setLoading(false);
@@ -54,37 +59,50 @@ const SideBar = () => {
       const suit = suits.find((suit) => suit.id === selectedValue);
       if (suit) {
         setSuit(suit);
+        setIsOpen(false);
+      }
+    } else {
+      if (suit) {
+        setSelectedValue(suit.id);
       }
     }
   }, [selectedValue]);
   return (
-    <div className="col-span-3 mt-10 ">
-      {suit && (
-        <div className="">
-          <p className="text-2xl text-center text-white inline">
-            Traje {suit.id}
-          </p>
-          <p className="text-2xl text-red-700 inline"> ESTADO: {suit.state}</p>
-        </div>
-      )}
+    <div
+      id="sidebar"
+      className={`fixed top-32 h-full w-full bg-gray-200 rounded-lg  transform transition-transform  ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+    >
       {loading ? (
-        <p>Loading...</p>
+        <div className="text-center">
+          <Spinner color="danger"></Spinner>
+        </div>
       ) : (
-        <div>
+        <div className="h-full">
           <ListboxWrapper>
             <Filter handleChange={handleInputChange}></Filter>
-
+            <h1 className="text-2xl text-center mt-3">Trajes</h1>
             <Listbox
               variant="flat"
               disallowEmptySelection
               selectionMode="single"
-              selectedKeys={selectedKeys}
-              onSelectionChange={setSelectedKeys}
+              onSelectionChange={(selected) => {
+                setSelectedValue(selected.currentKey);
+              }}
             >
-              <ListboxSection title="Trajes">
+              <ListboxSection>
                 {suitsToShow.map((suit) => (
-                  <ListboxItem key={suit.id}>
-                    {suit.id} <span>{suit.color}</span>
+                  <ListboxItem
+                    key={suit.id}
+                    className="border-b-1 border-gray-500"
+                    onClick={() => {
+                      if (selectedValue === suit.id) {
+                        setIsOpen(false);
+                      }
+                    }}
+                  >
+                    <span className="text-xl"> {suit.id}</span>
                   </ListboxItem>
                 ))}
               </ListboxSection>
