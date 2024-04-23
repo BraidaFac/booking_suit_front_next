@@ -21,6 +21,7 @@ import { Booking, BookingState } from '@/lib/utils/Booking';
 import { API_BACKEND } from '@/lib/utils/constanst';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { compareAsc } from 'date-fns/fp';
 
 export default function RetirarLavanderia() {
   const { user, setUser } = useUserState();
@@ -57,116 +58,158 @@ export default function RetirarLavanderia() {
     });
 
     setSuitInLoundry(
-      suitsInLoundry.map((suit: Suit) => {
-        const soon_booking_date = suit.bookings.reduce(
-          (acc: Booking | undefined, booking) => {
-            const date_booking = new Date(booking.booking_date).getTime();
-            const acc_date = acc
-              ? new Date(acc.booking_date).getTime()
-              : Infinity;
+      suitsInLoundry
+        .map((suit: Suit) => {
+          const soon_booking_date = suit.bookings.reduce(
+            (acc: Booking | undefined, booking) => {
+              const date_booking = new Date(booking.booking_date).getTime();
+              const acc_date = acc
+                ? new Date(acc.booking_date).getTime()
+                : Infinity;
 
-            if (
-              date_booking > new Date().getTime() &&
-              date_booking < acc_date &&
-              booking.booking_state === BookingState.ACTIVED
-            ) {
-              return booking;
-            } else {
-              return acc;
-            }
-          },
-          undefined
-        )?.booking_date;
-        return {
-          key: suit.id,
-          suit_name: suit.id,
-          suit_color: suit.color,
-          soon_booking: soon_booking_date
-            ? format(new Date(soon_booking_date), 'dd/MM/yyyy')
-            : 'No tiene',
-          actions: (
-            <Button
-              size="sm"
-              color="primary"
-              onClick={async () => {
-                const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    state: SuitState.LAVANDERIALIMPIO,
-                  }),
-                });
-                if (res.ok) {
-                  toast.success('Traje limpio');
-                  await fetchSuitsLoundry();
-                } else {
-                  toast.error('Error intente nuevamente');
-                }
-              }}
-            >
-              Limpio
-            </Button>
-          ),
-        };
-      })
+              if (
+                date_booking > new Date().getTime() &&
+                date_booking < acc_date &&
+                booking.booking_state === BookingState.ACTIVED
+              ) {
+                return booking;
+              } else {
+                return acc;
+              }
+            },
+            undefined
+          )?.booking_date;
+          return {
+            key: suit.id,
+            suit_name: suit.id,
+            suit_color: suit.color,
+            soon_booking: soon_booking_date
+              ? format(new Date(soon_booking_date), 'dd/MM/yyyy')
+              : 'No tiene',
+            actions: (
+              <Button
+                size="sm"
+                color="primary"
+                onClick={async () => {
+                  const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      state: SuitState.LAVANDERIALIMPIO,
+                    }),
+                  });
+                  if (res.ok) {
+                    toast.success('Traje limpio');
+                    await fetchSuitsLoundry();
+                  } else {
+                    toast.error('Error intente nuevamente');
+                  }
+                }}
+              >
+                Limpio
+              </Button>
+            ),
+          };
+        })
+        .sort((a: any, b: any) => {
+          const date_splited_a = a.soon_booking.split('/');
+          const date_splited_b = b.soon_booking.split('/');
+          if (date_splited_a.length !== 3 && date_splited_b.length !== 3)
+            return 0;
+          else if (date_splited_a.length !== 3) return 1;
+          else if (date_splited_b.length !== 3) return -1;
+          const date_a = new Date(
+            date_splited_a[2],
+            +date_splited_a[1] - 1,
+            date_splited_a[0]
+          );
+          const date_b = new Date(
+            date_splited_b[2],
+            +date_splited_b[1] - 1,
+            date_splited_b[0]
+          );
+
+          return date_a.getTime() < date_b.getTime() ? -1 : 1;
+        })
     );
     setSuitToTakeLoundry(
-      suitsToTakeLoundry.map((suit: Suit) => {
-        const soon_booking_date = suit.bookings.reduce(
-          (acc: Booking | undefined, booking) => {
-            const date_booking = new Date(booking.booking_date).getTime();
-            const acc_date = acc
-              ? new Date(acc.booking_date).getTime()
-              : Infinity;
+      suitsToTakeLoundry
+        .map((suit: Suit) => {
+          const soon_booking_date = suit.bookings.reduce(
+            (acc: Booking | undefined, booking) => {
+              const date_booking = new Date(booking.booking_date).getTime();
+              const acc_date = acc
+                ? new Date(acc.booking_date).getTime()
+                : Infinity;
 
-            if (
-              date_booking > new Date().getTime() &&
-              date_booking < acc_date &&
-              booking.booking_state === BookingState.ACTIVED
-            ) {
-              return booking;
-            } else {
-              return acc;
-            }
-          },
-          undefined
-        )?.booking_date;
-        return {
-          key: suit.id,
-          suit_name: suit.id,
-          soon_booking: soon_booking_date
-            ? format(new Date(soon_booking_date), 'dd/MM/yyyy')
-            : 'No tiene',
-          suit_color: suit.color,
-          actions: (
-            <Button
-              size="sm"
-              color="primary"
-              onClick={async () => {
-                const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    state: SuitState.ENLOCALLIMPIO,
-                  }),
-                });
-                if (res.ok) {
-                  toast.success('Traje retirado');
-                  await fetchSuitsLoundry();
-                } else {
-                  toast.error('Error al entregar el traje');
-                }
-              }}
-            >
-              Entregado
-            </Button>
-          ),
-        };
-      })
+              if (
+                date_booking > new Date().getTime() &&
+                date_booking < acc_date &&
+                booking.booking_state === BookingState.ACTIVED
+              ) {
+                return booking;
+              } else {
+                return acc;
+              }
+            },
+            undefined
+          )?.booking_date;
+          return {
+            key: suit.id,
+            suit_name: suit.id,
+            soon_booking: soon_booking_date
+              ? format(new Date(soon_booking_date), 'dd/MM/yyyy')
+              : 'No tiene',
+            suit_color: suit.color,
+            actions: (
+              <Button
+                size="sm"
+                color="primary"
+                onClick={async () => {
+                  const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      state: SuitState.ENLOCALLIMPIO,
+                    }),
+                  });
+                  if (res.ok) {
+                    toast.success('Traje retirado');
+                    await fetchSuitsLoundry();
+                  } else {
+                    toast.error('Error al entregar el traje');
+                  }
+                }}
+              >
+                Entregado
+              </Button>
+            ),
+          };
+        })
+        .sort((a: any, b: any) => {
+          const date_splited_a = a.soon_booking.split('/');
+          const date_splited_b = b.soon_booking.split('/');
+          if (date_splited_a.length !== 3 && date_splited_b.length !== 3)
+            return 0;
+          else if (date_splited_a.length !== 3) return 1;
+          else if (date_splited_b.length !== 3) return -1;
+          const date_a = new Date(
+            date_splited_a[2],
+            +date_splited_a[1] - 1,
+            date_splited_a[0]
+          );
+          const date_b = new Date(
+            date_splited_b[2],
+            +date_splited_b[1] - 1,
+            date_splited_b[0]
+          );
+
+          return date_a.getTime() < date_b.getTime() ? -1 : 1;
+        })
     );
   };
   const fetchUser = async (token: string) => {
@@ -203,6 +246,8 @@ export default function RetirarLavanderia() {
       } else {
         (async () => {
           await fetchSuitsLoundry();
+          console.log(suitsInLoundry);
+
           setIsLoading(false);
         })();
       }
