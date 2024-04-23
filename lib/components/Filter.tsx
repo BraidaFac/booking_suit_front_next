@@ -11,21 +11,21 @@ const Filter = ({
 }) => {
   const [date, setDate] = useState('');
   return (
-    <div className="w-full mt-1" id="filter_div">
+    <div className="w-full mt-1 flex flex-row items-center" id="filter_div">
       <Input
-        size="sm"
+        size="lg"
         type="text"
         placeholder="Buscar"
         id="input_sidebar"
         onChange={handleChange}
-        className="inline-block w-2/3 mr-4"
+        className=" w-2/3 mr-4"
       />
 
       <Input
         id="input_date_sidebar"
         type="date"
-        className="w-10 inline-block"
-        size="sm"
+        className="w-10"
+        size="lg"
         onChange={(e) => {
           setDate(e.target.value);
         }}
