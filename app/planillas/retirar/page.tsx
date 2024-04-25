@@ -14,14 +14,12 @@ import {
 import { Suit, SuitState } from '@/lib/utils/Suit';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSuitContext } from '@/lib/components/SuitContext';
 import { useUserState } from '@/lib/utils/UserState';
 import { getCookie } from 'cookies-next';
 import { Booking, BookingState } from '@/lib/utils/Booking';
 import { API_BACKEND } from '@/lib/utils/constanst';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { compareAsc } from 'date-fns/fp';
 
 export default function RetirarLavanderia() {
   const { user, setUser } = useUserState();
@@ -60,7 +58,7 @@ export default function RetirarLavanderia() {
     setSuitInLoundry(
       suitsInLoundry
         .map((suit: Suit) => {
-          const soon_booking_date = suit.bookings.reduce(
+          const soon_booking_date_string = suit.bookings.reduce(
             (acc: Booking | undefined, booking) => {
               const date_booking = new Date(booking.booking_date).getTime();
               const acc_date = acc
@@ -79,12 +77,22 @@ export default function RetirarLavanderia() {
             },
             undefined
           )?.booking_date;
+          const soon_booking_date = soon_booking_date_string
+            ? new Date(soon_booking_date_string)
+            : undefined;
           return {
             key: suit.id,
             suit_name: suit.id,
             suit_color: suit.color,
             soon_booking: soon_booking_date
-              ? format(new Date(soon_booking_date), 'dd/MM/yyyy')
+              ? format(
+                  new Date(
+                    soon_booking_date.getFullYear(),
+                    soon_booking_date.getMonth(),
+                    soon_booking_date.getDate() - 1
+                  ),
+                  'dd/MM/yyyy'
+                )
               : 'No tiene',
             actions: (
               <Button
@@ -137,7 +145,7 @@ export default function RetirarLavanderia() {
     setSuitToTakeLoundry(
       suitsToTakeLoundry
         .map((suit: Suit) => {
-          const soon_booking_date = suit.bookings.reduce(
+          const soon_booking_date_string = suit.bookings.reduce(
             (acc: Booking | undefined, booking) => {
               const date_booking = new Date(booking.booking_date).getTime();
               const acc_date = acc
@@ -156,11 +164,21 @@ export default function RetirarLavanderia() {
             },
             undefined
           )?.booking_date;
+          const soon_booking_date = soon_booking_date_string
+            ? new Date(soon_booking_date_string)
+            : undefined;
           return {
             key: suit.id,
             suit_name: suit.id,
             soon_booking: soon_booking_date
-              ? format(new Date(soon_booking_date), 'dd/MM/yyyy')
+              ? format(
+                  new Date(
+                    soon_booking_date.getFullYear(),
+                    soon_booking_date.getMonth(),
+                    soon_booking_date.getDate() - 1
+                  ),
+                  'dd/MM/yyyy'
+                )
               : 'No tiene',
             suit_color: suit.color,
             actions: (
