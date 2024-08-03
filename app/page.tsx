@@ -66,7 +66,7 @@ export default function Home() {
           <Spinner color="danger"></Spinner>
         </div>
       ) : (
-        <div>
+        <div className="">
           <Button
             className="btn fixed top-20 left-3 z-50 w-5 p-0 m-0 bg-red-700"
             color="primary"

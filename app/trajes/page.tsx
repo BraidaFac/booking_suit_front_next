@@ -99,7 +99,6 @@ export default function Login() {
         brand: suit_brand,
       }),
     });
-    console.log(await response.json());
 
     if (response.ok) {
       setError(false);
@@ -236,7 +235,7 @@ export default function Login() {
         </ModalContent>
       </Modal>
       {!isLoading ? (
-        <div className="w-full p-4 ">
+        <div className="w-11/12 mx-auto ">
           <div className="flex gap-16 mb-4">
             <Button
               onClick={() => {
@@ -245,7 +244,9 @@ export default function Login() {
             >
               Nuevo
             </Button>
-            <p className="text-3xl  text-red-700">Trajes</p>
+            <p className="text-3xl  text-red-700 absolute left-1/2 -translate-x-1/2">
+              Trajes
+            </p>
           </div>
           <Table
             aria-label="Example table with custom cells"

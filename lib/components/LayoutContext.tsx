@@ -12,7 +12,7 @@ function LayoutContext({ children }: any) {
   return (
     <body
       suppressHydrationWarning={true}
-      className="h-full w-full overflow-auto "
+      className="overflow-auto "
       /*  onClick={(event) => {
         const sideBar = document.getElementById('sidebar');
         const input_sidebar = document.getElementById('input_sidebar');

@@ -95,7 +95,7 @@ const SideBar = () => {
     <div
       id="sidebar"
       style={{ width: '98vw' }}
-      className={`fixed top-32 h-full bg-gray-900 rounded-lg  transform transition-transform  ${
+      className={`overflow-auto fixed top-32 h-full bg-gray-900 rounded-lg  transform transition-transform  ${
         isOpen ? 'translate-x-1' : '-translate-x-full'
       }`}
     >

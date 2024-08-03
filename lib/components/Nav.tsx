@@ -18,7 +18,7 @@ const Nav = () => {
   const router = useRouter();
   return (
     <NextUIProvider navigate={router.push}>
-      <nav className="flex items-center justify-between w-full h-16  text-white mt-2 pr-2">
+      <nav className="mx-auto flex items-center justify-between  h-16  text-white mt-2 pr-5 gap-10">
         <Logo />
         {user && user?.role !== 'LOUNDRY' && (
           <div>

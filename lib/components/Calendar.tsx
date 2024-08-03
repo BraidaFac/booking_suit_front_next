@@ -133,7 +133,7 @@ export default function Calendar() {
     }
   };
   return (
-    <div className="mx-auto p-3 h-full ">
+    <div className="p-4 h-full ">
       {!suit ? (
         <div className="w-full">
           <p className="text-4xl text-white text-center mt-28">

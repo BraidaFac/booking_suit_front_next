@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full w-full">
+    <html lang="en" style={{ padding: 0, width: '98vw' }}>
       <LayoutContext>{children}</LayoutContext>
     </html>
   );
