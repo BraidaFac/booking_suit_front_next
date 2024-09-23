@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   NextUIProvider,
   Table,
@@ -10,14 +10,14 @@ import {
   getKeyValue,
   Button,
   Spinner,
-} from '@nextui-org/react';
-import { Suit, SuitState } from '@/lib/utils/Suit';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUserState } from '@/lib/utils/UserState';
-import { getCookie } from 'cookies-next';
-import { API_BACKEND } from '@/lib/utils/constanst';
-import toast from 'react-hot-toast';
+} from "@nextui-org/react";
+import { Suit, SuitState } from "@/lib/utils/Suit";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUserState } from "@/lib/utils/UserState";
+import { getCookie } from "cookies-next";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import toast from "react-hot-toast";
 
 export default function Planillas() {
   const router = useRouter();
@@ -48,19 +48,19 @@ export default function Planillas() {
                 color="primary"
                 onClick={async () => {
                   const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                    method: 'PATCH',
+                    method: "PATCH",
                     headers: {
-                      'Content-Type': 'application/json',
+                      "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                       state: SuitState.LAVANDERIASUCIO,
                     }),
                   });
                   if (res.ok) {
-                    toast.success('Traje entregado correctamente');
+                    toast.success("Traje entregado correctamente");
                     await fetchSuitToLoundry();
                   } else {
-                    toast.error('Error al entregar traje');
+                    toast.error("Error al entregar traje");
                   }
                 }}
               >
@@ -74,8 +74,8 @@ export default function Planillas() {
   };
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
     if (res.ok) {
@@ -84,8 +84,8 @@ export default function Planillas() {
         name: user.username,
         role: user.role,
       });
-      if (user.role === 'LOUNDRY') {
-        router.push('/planillas/retirar');
+      if (user.role === "LOUNDRY") {
+        router.push("/planillas/retirar");
       } else {
         (async () => {
           await fetchSuitToLoundry();
@@ -94,22 +94,22 @@ export default function Planillas() {
       }
     } else {
       setUser(null);
-      router.push('/login');
+      router.push("/login");
     }
   };
   useEffect(() => {
-    const token_cookie = getCookie('Authorization');
-    const token = token_cookie ? token_cookie.split(' ')[1] : '';
+    const token_cookie = getCookie("Authorization");
+    const token = token_cookie ? token_cookie.split(" ")[1] : "";
     if (!token) {
-      router.push('/login');
+      router.push("/login");
     } else {
       if (!user) {
         (async () => {
           await fetchUser(token);
         })();
       } else {
-        if (user.role === 'LOUNDRY') {
-          router.push('/planillas/retirar');
+        if (user.role === "LAUNDRY") {
+          router.push("/planillas/retirar");
         } else {
           (async () => {
             await fetchSuitToLoundry();
@@ -121,14 +121,14 @@ export default function Planillas() {
   }, []);
   const columns = [
     {
-      key: 'suit_id',
-      label: 'Traje',
+      key: "suit_id",
+      label: "Traje",
     },
     {
-      key: 'suit_color',
-      label: 'Color',
+      key: "suit_color",
+      label: "Color",
     },
-    { key: 'actions', label: 'Acciones' },
+    { key: "actions", label: "Acciones" },
   ];
   return (
     <>
@@ -164,7 +164,7 @@ export default function Planillas() {
                 items={suitsToLoundry}
                 isLoading={isLoading}
                 emptyContent={
-                  isLoading ? null : 'No hay trajes para llevar a lavanderia'
+                  isLoading ? null : "No hay trajes para llevar a lavanderia"
                 }
                 loadingContent={<Spinner color="white" />}
               >

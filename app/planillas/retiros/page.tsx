@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   Table,
   TableHeader,
@@ -9,16 +9,16 @@ import {
   getKeyValue,
   Button,
   Spinner,
-} from '@nextui-org/react';
-import { Booking, BookingState } from '@/lib/utils/Booking';
-import { SuitState } from '@/lib/utils/Suit';
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
-import { useUserState } from '@/lib/utils/UserState';
-import { getCookie } from 'cookies-next';
-import { API_BACKEND } from '@/lib/utils/constanst';
-import toast from 'react-hot-toast';
+} from "@nextui-org/react";
+import { Booking, BookingState } from "@/lib/utils/Booking";
+import { SuitState } from "@/lib/utils/Suit";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useUserState } from "@/lib/utils/UserState";
+import { getCookie } from "cookies-next";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import toast from "react-hot-toast";
 
 export default function Retiros() {
   const [isLoading, setIsLoading] = useState(true);
@@ -74,9 +74,9 @@ export default function Retiros() {
           client_name: booking.client_name,
           client_phone: booking.client_phone,
           suit: booking.suit.id,
-          dress_maker: booking.dressmaker ? 'Si' : 'No',
+          dress_maker: booking.dressmaker ? "Si" : "No",
           observation: booking.observations,
-          booking_date: format(new Date(booking.booking_date), 'dd/MM/yyyy'),
+          booking_date: format(new Date(booking.booking_date), "dd/MM/yyyy"),
           actions: (
             <Button
               size="sm"
@@ -85,9 +85,9 @@ export default function Retiros() {
                 const res = await fetch(
                   `${API_BACKEND}/booking/${booking.id}/estados`,
                   {
-                    method: 'PATCH',
+                    method: "PATCH",
                     headers: {
-                      'Content-Type': 'application/json',
+                      "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                       booking_state: BookingState.INPROGRESS,
@@ -97,10 +97,10 @@ export default function Retiros() {
                   }
                 );
                 if (res.ok) {
-                  toast.success('Traje retirado');
+                  toast.success("Traje retirado");
                   await fetchNearBookings();
                 } else {
-                  toast.error('Error al retirar el traje');
+                  toast.error("Error al retirar el traje");
                 }
               }}
             >
@@ -113,8 +113,8 @@ export default function Retiros() {
   };
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
     if (res.ok) {
@@ -123,8 +123,8 @@ export default function Retiros() {
         name: user.username,
         role: user.role,
       });
-      if (user.role === 'LOUNDRY') {
-        router.push('/planillas/retirar');
+      if (user.role === "LAUNDRY") {
+        router.push("/planillas/retirar");
       } else {
         (async () => {
           await fetchNearBookings();
@@ -133,22 +133,22 @@ export default function Retiros() {
       }
     } else {
       setUser(null);
-      router.push('/login');
+      router.push("/login");
     }
   };
   useEffect(() => {
-    const token_cookie = getCookie('Authorization');
-    const token = token_cookie ? token_cookie.split(' ')[1] : '';
+    const token_cookie = getCookie("Authorization");
+    const token = token_cookie ? token_cookie.split(" ")[1] : "";
     if (!token) {
-      router.push('/login');
+      router.push("/login");
     } else {
       if (!user) {
         (async () => {
           await fetchUser(token);
         })();
       } else {
-        if (user.role === 'LOUNDRY') {
-          router.push('/planillas/retirar');
+        if (user.role === "LOUNDRY") {
+          router.push("/planillas/retirar");
         } else {
           (async () => {
             await fetchNearBookings();
@@ -161,29 +161,29 @@ export default function Retiros() {
 
   const columns = [
     {
-      key: 'client_name',
-      label: 'Cliente',
+      key: "client_name",
+      label: "Cliente",
     },
     {
-      key: 'client_phone',
-      label: 'Telefono',
+      key: "client_phone",
+      label: "Telefono",
     },
     {
-      key: 'suit',
-      label: 'Traje',
+      key: "suit",
+      label: "Traje",
     },
     {
-      key: 'booking_date',
-      label: 'Fecha de reserva',
+      key: "booking_date",
+      label: "Fecha de reserva",
     },
     {
-      key: 'dress_maker',
-      label: 'Modista',
+      key: "dress_maker",
+      label: "Modista",
     },
-    { key: 'observation', label: 'Observaciones' },
+    { key: "observation", label: "Observaciones" },
     {
-      key: 'actions',
-      label: 'Acciones',
+      key: "actions",
+      label: "Acciones",
     },
   ];
   return (
@@ -214,7 +214,7 @@ export default function Retiros() {
             <TableBody
               items={nearBookings}
               isLoading={isLoading}
-              emptyContent={isLoading ? null : 'No hay reservas proximas'}
+              emptyContent={isLoading ? null : "No hay reservas proximas"}
               loadingContent={<Spinner color="white" />}
             >
               {(item) => (

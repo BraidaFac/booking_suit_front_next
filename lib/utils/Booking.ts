@@ -1,4 +1,4 @@
-import { Suit } from './Suit';
+import { Suit } from "./Suit";
 
 export interface Booking {
   id: number;
@@ -17,8 +17,19 @@ export interface Booking {
 }
 
 export enum BookingState {
-  ACTIVED = 'ACTIVED',
-  CANCELED = 'CANCELED',
-  COMPLETED = 'COMPLETED',
-  INPROGRESS = 'INPROGRESS',
+  ACTIVED = "ACTIVED",
+  CANCELED = "CANCELED",
+  COMPLETED = "COMPLETED",
+  INPROGRESS = "INPROGRESS",
+}
+
+const bookingStateMapper: { [key: string]: string } = {
+  ACTIVED: "Reserva Activa",
+  CANCELED: "Reserva Cancelada",
+  COMPLETED: "Reserva Completada",
+  INPROGRESS: "Reserva en Progreso",
+};
+
+export function mapBookingState(state: string): string {
+  return bookingStateMapper[state] || "Estado Desconocido";
 }

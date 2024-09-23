@@ -1,8 +1,8 @@
-'use client';
-import { Booking, BookingState } from '@/lib/utils/Booking';
-import { SuitState } from '@/lib/utils/Suit';
-import { useUserState } from '@/lib/utils/UserState';
-import { getCookie, setCookie } from 'cookies-next';
+"use client";
+import { Booking, BookingState } from "@/lib/utils/Booking";
+import { SuitState } from "@/lib/utils/Suit";
+import { useUserState } from "@/lib/utils/UserState";
+import { getCookie, setCookie } from "cookies-next";
 import {
   Table,
   TableBody,
@@ -13,12 +13,12 @@ import {
   getKeyValue,
   Button,
   Spinner,
-} from '@nextui-org/react';
-import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { API_BACKEND } from '@/lib/utils/constanst';
-import toast from 'react-hot-toast';
+} from "@nextui-org/react";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import toast from "react-hot-toast";
 
 export default function Devolucion() {
   const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +56,7 @@ export default function Devolucion() {
           key: booking.id,
           client_name: booking.client_name,
           client_phone: booking.client_phone,
-          booking_date: format(new Date(booking.booking_date), 'dd-MM-yyyy'),
+          booking_date: format(new Date(booking.booking_date), "dd-MM-yyyy"),
           actions: (
             <Button
               size="sm"
@@ -66,9 +66,9 @@ export default function Devolucion() {
                 const res = await fetch(
                   `${API_BACKEND}/booking/${booking.id}/estados`,
                   {
-                    method: 'PATCH',
+                    method: "PATCH",
                     headers: {
-                      'Content-Type': 'application/json',
+                      "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                       booking_state: BookingState.COMPLETED,
@@ -78,10 +78,10 @@ export default function Devolucion() {
                   }
                 );
                 if (res.ok) {
-                  toast.success('Traje devuelto correctamente');
+                  toast.success("Traje devuelto correctamente");
                   await fetchBookingsToReturn();
                 } else {
-                  toast.error('Error al devolver traje');
+                  toast.error("Error al devolver traje");
                 }
               }}
             >
@@ -94,8 +94,8 @@ export default function Devolucion() {
   };
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
     if (res.ok) {
@@ -104,8 +104,8 @@ export default function Devolucion() {
         name: user.username,
         role: user.role,
       });
-      if (user.role === 'LOUNDRY') {
-        router.push('/planillas/retirar');
+      if (user.role === "LOUNDRY") {
+        router.push("/planillas/retirar");
       } else {
         (async () => {
           await fetchBookingsToReturn();
@@ -114,22 +114,22 @@ export default function Devolucion() {
       }
     } else {
       setUser(null);
-      router.push('/login');
+      router.push("/login");
     }
   };
   useEffect(() => {
-    const token_cookie = getCookie('Authorization');
-    const token = token_cookie ? token_cookie.split(' ')[1] : '';
+    const token_cookie = getCookie("Authorization");
+    const token = token_cookie ? token_cookie.split(" ")[1] : "";
     if (!token) {
-      router.push('/login');
+      router.push("/login");
     } else {
       if (!user) {
         (async () => {
           await fetchUser(token);
         })();
       } else {
-        if (user.role === 'LOUNDRY') {
-          router.push('/planillas/retirar');
+        if (user.role === "LAUNDRY") {
+          router.push("/planillas/retirar");
         } else {
           (async () => {
             await fetchBookingsToReturn();
@@ -140,10 +140,10 @@ export default function Devolucion() {
     }
   }, []);
   const columns = [
-    { key: 'client_name', label: 'Nombre' },
-    { key: 'client_phone', label: 'Telefono' },
-    { key: 'booking_date', label: 'Fecha' },
-    { key: 'actions', label: 'Acciones' },
+    { key: "client_name", label: "Nombre" },
+    { key: "client_phone", label: "Telefono" },
+    { key: "booking_date", label: "Fecha" },
+    { key: "actions", label: "Acciones" },
   ];
   return (
     <>
@@ -180,7 +180,7 @@ export default function Devolucion() {
                   items={bookingsToReturn}
                   isLoading={isLoading}
                   emptyContent={
-                    isLoading ? null : 'No hay trajes para devolver'
+                    isLoading ? null : "No hay trajes para devolver"
                   }
                   loadingContent={<Spinner color="white" />}
                 >

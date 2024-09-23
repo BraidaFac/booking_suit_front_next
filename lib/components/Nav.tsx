@@ -1,5 +1,5 @@
-'use client';
-import Logo from './Logo/Logo';
+"use client";
+import Logo from "./Logo/Logo";
 import {
   Dropdown,
   DropdownTrigger,
@@ -8,10 +8,10 @@ import {
   Button,
   NextUIProvider,
   Link,
-} from '@nextui-org/react';
-import CookiesUtils from '../utils/cookies';
-import { useUserState } from '../utils/UserState';
-import { useRouter } from 'next/navigation';
+} from "@nextui-org/react";
+import CookiesUtils from "../utils/cookies";
+import { useUserState } from "../utils/UserState";
+import { useRouter } from "next/navigation";
 
 const Nav = () => {
   const { user, setUser } = useUserState();
@@ -20,7 +20,7 @@ const Nav = () => {
     <NextUIProvider navigate={router.push}>
       <nav className="mx-auto flex items-center justify-between  h-16  text-white mt-2 pr-5 gap-10">
         <Logo />
-        {user && user?.role !== 'LOUNDRY' && (
+        {user && user?.role !== "LAUNDRY" ? (
           <div>
             <Dropdown>
               <DropdownTrigger>
@@ -47,19 +47,42 @@ const Nav = () => {
                 <DropdownItem key="history" href="/reservas">
                   Historial
                 </DropdownItem>
+                <DropdownItem key="reservas" href="/diario">
+                  Calendario de Reservas
+                </DropdownItem>
                 <DropdownItem key="suits" href="/trajes">
                   Trajes
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
+        ) : (
+          user && (
+            <div>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="bordered" className="text-white">
+                    Menu
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Static Actions">
+                  <DropdownItem key="takeLoundry" href="/planillas/retirar">
+                    Lavanderia
+                  </DropdownItem>
+                  <DropdownItem key="reservas" href="/diario">
+                    Calendario de Reservas
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          )
         )}
         {user && (
           <div>
             <Link
               href="/login"
               onClick={() => {
-                CookiesUtils.removeItem('Authorization');
+                CookiesUtils.removeItem("Authorization");
                 setUser(null);
               }}
             >

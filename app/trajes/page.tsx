@@ -1,6 +1,6 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useEffect, useState } from 'react';
+"use client";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Button,
   Input,
@@ -18,273 +18,296 @@ import {
   TableHeader,
   TableRow,
   getKeyValue,
+  select,
   useDisclosure,
-} from '@nextui-org/react';
-import CookiesUtils from '../../lib/utils/cookies';
-import { useUserState } from '@/lib/utils/UserState';
-import { API_BACKEND } from '@/lib/utils/constanst';
-import { getCookie } from 'cookies-next';
-import { Suit } from '@/lib/utils/Suit';
-import { toast } from 'react-hot-toast';
+} from "@nextui-org/react";
+import { Suit, SuitState } from "@/lib/utils/Suit";
+import useSWR from "swr";
+import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { useSuits } from "./hooks/useSuits";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useAuth } from "../login/hooks/useAuth";
+import { clear } from "console";
 
-export default function Login() {
+export default function SuitsPage() {
+  const { fetchSuits, deleteSuit, createSuit, updateSuit } = useSuits();
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [isLoading, setIsLoading] = useState(true);
-  const { user, setUser } = useUserState();
-  const router = useRouter();
-  const [error, setError] = useState(false);
-  const [suits, setSuits] = useState<Suit[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedSuit, setSelectedSuit] = useState<Suit | null>(null);
 
-  async function fetchSuits() {
-    const res = await fetch(`${API_BACKEND}/suit`);
-    if (res.ok) {
-      const suits = await res.json();
-      setSuits(
-        suits.map((suit: Suit) => {
-          return {
-            id: suit.id,
-            color: suit.color,
-            category: suit.category,
-            actions: (
-              <Button
-                size="sm"
-                color="primary"
-                onClick={async () => {
-                  const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                    method: 'DELETE',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      cors: 'no-cors',
-                    },
-                  });
-                  if (res.ok) {
-                    await fetchSuits();
-                    toast.success('Traje eliminado');
-                  } else if (res.status === 400) {
-                    toast.error('El traje tiene reservas activas');
-                  } else {
-                    toast.error('Error al eliminar el traje');
-                  }
-                }}
-              >
-                Eliminar
-              </Button>
-            ),
-          };
-        })
-      );
-    } else {
-      router.push('/login');
-    }
-  }
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const { user, isLoading: isAuthLoading } = useAuth();
+  // Hook para obtener la lista de trajes
+  const {
+    data: suits,
+    error,
+    mutate,
+    isLoading,
+  } = useSWR<Suit[]>("suits", fetchSuits);
 
-    const formData = new FormData(event.currentTarget);
-    const suit_id = formData.get('suit_id');
-    const suit_color = formData.get('suit_color');
-    const suit_category = formData.get('suit_category');
-    const suit_brand = formData.get('suit_brand');
-    if (!suit_id || !suit_brand || !suit_category || !suit_color) {
-      setError(true);
-      return;
-    }
-    const response = await fetch(`${API_BACKEND}/suit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: suit_id,
-        color: suit_color,
-        category: suit_category,
-        brand: suit_brand,
-      }),
-    });
+  // Esquema de validación para el formulario de trajes
+  const schema = yup.object().shape({
+    id: yup.string().required("El código es obligatorio"),
+    color: yup.string().required("El color es obligatorio"),
+    category: yup.string().required("La categoría es obligatoria"),
+    brand: yup.string().required("La marca es obligatoria"),
+    state: yup.string(),
+    size: yup
+      .number()
+      .typeError("El talle es obligatorio")
+      .min(38, "Desde talle 38")
+      .max(70, "Hasta talle 70")
+      .required("El talle es obligatorio"),
+  });
 
-    if (response.ok) {
-      setError(false);
+  // Hook para manejar el formulario de trajes
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  // Lógica para manejar la creación de un traje
+  const onSubmit = async (data: any) => {
+    const success = isEditing ? await updateSuit(data) : await createSuit(data);
+    if (success) {
       onClose();
-      toast.success('Traje creado');
-      await fetchSuits();
-    } else {
-      toast.error('Error al crear traje');
-    }
-  }
-  const fetchUser = async (token: string) => {
-    const res = await fetch(`${API_BACKEND}/auth/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-    if (res.ok) {
-      const { username, role } = await res.json();
-      setUser({
-        name: username,
-        role: role,
-      });
-      if (role === 'LOUNDRY') {
-        router.push('/planillas/retirar');
-      }
-      (async () => {
-        await fetchSuits();
-        setIsLoading(false);
-      })();
-    } else {
-      setUser(null);
-      router.push('/login');
+      setIsEditing(false);
+      setSelectedSuit(null);
+      mutate(); // Revalida la lista de trajes tras la creación
     }
   };
-  useEffect(() => {
-    const token_cookie = getCookie('Authorization');
-    const token = token_cookie ? token_cookie.split(' ')[1] : '';
-    if (!token) {
-      router.push('/login');
-    } else {
-      if (!user) {
-        (async () => {
-          await fetchUser(token);
-        })();
-      } else {
-        if (user.role === 'LOUNDRY') {
-          router.push('/planillas/retirar');
-        } else {
-          (async () => {
-            await fetchSuits();
-            setIsLoading(false);
-          })();
-        }
-      }
-    }
-  }, []);
 
+  // Lógica para eliminar un traje
+  const handleDelete = async (suitId: number) => {
+    const success = await deleteSuit(suitId);
+    if (success) {
+      mutate(); // Revalida la lista de trajes tras la eliminación
+    }
+  };
+
+  //Logica para actualizar
+  const handleEdit = (suit: Suit) => {
+    setSelectedSuit(suit);
+    setIsEditing(true);
+    onOpen();
+  };
+  // Resetear el formulario cuando se cierra el modal
+  const handleClose = () => {
+    reset(); // Limpia el formulario
+    setIsEditing(false); // Restablecer el estado de edición
+    setSelectedSuit(null); // Restablecer el traje seleccionado
+    onClose(); // Cerrar el modal
+  };
+
+  // Configuración de columnas para la tabla de trajes
   const columns = [
-    { label: 'ID', key: 'id' },
-    { label: 'Color', key: 'color' },
-    { label: 'Categoria', key: 'category' },
-    { label: 'Acciones', key: 'actions' },
+    { label: "Codigo", key: "id" },
+    { label: "Color", key: "color" },
+    { label: "Categoria", key: "category" },
+    { label: "Marca", key: "brand" },
+    { label: "Talle", key: "size" },
+    { label: "Estado", key: "state" },
+    { label: "Acciones", key: "actions" },
   ];
+
+  useEffect(() => {
+    if (selectedSuit) {
+      reset(selectedSuit);
+    }
+  }, [selectedSuit, reset]);
+  if (isLoading || isAuthLoading) {
+    return <Spinner className="absolute right-1/2 top-1/2" color="danger" />;
+  }
+  if (error) {
+    return (
+      <div className="absolute right-1/2 top-1/2">
+        Error al cargar los trajes
+      </div>
+    );
+  }
+
   return (
     <>
       <Modal
         isOpen={isOpen}
+        onClose={handleClose}
         onOpenChange={onOpenChange}
         placement="center"
         backdrop="blur"
         className="w-11/12"
       >
         <ModalContent>
-          {(onClose) => (
+          {() => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Nuevo traje
+                {isEditing ? "Modificar traje" : "Nuevo traje"}
               </ModalHeader>
               <ModalBody>
-                <form className="" onSubmit={handleSubmit}>
-                  <div className="flex flex-col gap-4">
-                    <Input
-                      label="Codigo"
-                      placeholder="Codigo"
-                      name="suit_id"
-                      type="text"
-                    ></Input>
-                    <Input
-                      label="Color"
-                      name="suit_color"
-                      type="text"
-                      placeholder="Color"
-                    />
-                    <Select
-                      label="Categoria"
-                      name="suit_category"
-                      placeholder="Categoria"
-                    >
-                      <SelectItem key="A" value={'A'}>
-                        {'A'}
-                      </SelectItem>
-                      <SelectItem key="B" value={'B'}>
-                        {'B'}
-                      </SelectItem>
-                      <SelectItem key="C" value={'C'}>
-                        {'C'}
-                      </SelectItem>
-                      <SelectItem key="D" value={'D'}>
-                        {'D'}
-                      </SelectItem>
-                      <SelectItem key="E" value={'E'}>
-                        {'E'}
-                      </SelectItem>
-                    </Select>
-                    <Input
-                      label="Marca"
-                      name="suit_brand"
-                      type="text"
-                      placeholder="Marca"
-                    />
-                    {error && (
-                      <span className="text-red-600">
-                        Faltan rellenar campos
-                      </span>
-                    )}
-                    <Button type="submit" color="primary">
-                      Guardar
-                    </Button>
-                  </div>
+                <form
+                  className="flex flex-col gap-2"
+                  onSubmit={handleSubmit(onSubmit)}
+                >
+                  <Input
+                    {...register("id")}
+                    label="Codigo"
+                    placeholder="Codigo"
+                  />
+                  <Input
+                    {...register("color")}
+                    label="Color"
+                    startContent={true}
+                    placeholder="Color"
+                  />
+                  {errors.color && (
+                    <span className="text-red-600 text-xs">
+                      {errors.color.message}
+                    </span>
+                  )}
+                  <Input
+                    {...register("brand")}
+                    label="Marca"
+                    placeholder="Marca"
+                  />
+                  {errors.brand && (
+                    <span className="text-red-600 text-xs">
+                      {errors.brand.message}
+                    </span>
+                  )}
+                  <Input
+                    {...register("size", { valueAsNumber: true })}
+                    label="Talle"
+                    placeholder="Talle"
+                    type="number"
+                  />
+                  {errors.size && (
+                    <span className="text-red-600 text-xs">
+                      {errors.size.message}
+                    </span>
+                  )}
+
+                  <Select {...register("category")} label="Categoría">
+                    <SelectItem key="A" value="A">
+                      A
+                    </SelectItem>
+                    <SelectItem key="B" value="B">
+                      B
+                    </SelectItem>
+                    <SelectItem key="C" value="C">
+                      C
+                    </SelectItem>
+                  </Select>
+                  {errors.category && (
+                    <span className="text-red-600 text-xs">
+                      {errors.category.message}
+                    </span>
+                  )}
+                  {isEditing && (
+                    <>
+                      <Select {...register("state")} label="Estado del traje">
+                        <SelectItem
+                          key={SuitState.ENLOCALLIMPIO}
+                          value={SuitState.ENLOCALLIMPIO}
+                        >
+                          EN LOCAL LIMPIO
+                        </SelectItem>
+                        <SelectItem
+                          key={SuitState.ENLOCALSUCIO}
+                          value={SuitState.ENLOCALSUCIO}
+                        >
+                          EN LOCAL SUCIO
+                        </SelectItem>
+                        <SelectItem
+                          key={SuitState.RETIRADO}
+                          value={SuitState.RETIRADO}
+                        >
+                          RETIRADO
+                        </SelectItem>
+                        <SelectItem
+                          key={SuitState.LAVANDERIALIMPIO}
+                          value={SuitState.LAVANDERIALIMPIO}
+                        >
+                          EN LAVANDERIA LIMPIO
+                        </SelectItem>
+                        <SelectItem
+                          key={SuitState.LAVANDERIASUCIO}
+                          value={SuitState.LAVANDERIASUCIO}
+                        >
+                          EN LAVANDERIA SUCIO
+                        </SelectItem>
+                        <SelectItem
+                          key={SuitState.MODISTA}
+                          value={SuitState.MODISTA}
+                        >
+                          MODISTA
+                        </SelectItem>
+                      </Select>
+                      {errors.category && (
+                        <span className="text-red-600 text-xs">
+                          {errors.state?.message}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  <Button className="mt-4" type="submit" color="primary">
+                    Guardar
+                  </Button>
                 </form>
               </ModalBody>
             </>
           )}
         </ModalContent>
       </Modal>
-      {!isLoading ? (
-        <div className="w-11/12 mx-auto ">
-          <div className="flex gap-16 mb-4">
-            <Button
-              onClick={() => {
-                onOpen();
-              }}
-            >
-              Nuevo
-            </Button>
-            <p className="text-3xl  text-red-700 absolute left-1/2 -translate-x-1/2">
-              Trajes
-            </p>
-          </div>
-          <Table
-            aria-label="Example table with custom cells"
-            isHeaderSticky
-            bottomContent={
-              isLoading ? (
-                <div className="flex w-full justify-center">
-                  <Spinner color="danger" />
-                </div>
-              ) : null
-            }
-          >
-            <TableHeader columns={columns}>
-              {(column) => (
-                <TableColumn key={column.key}>{column.label}</TableColumn>
-              )}
-            </TableHeader>
-            <TableBody
-              items={suits}
-              isLoading={isLoading}
-              emptyContent={isLoading ? null : 'No hay trajes'}
-              loadingContent={<Spinner color="danger" />}
-            >
-              {(item) => (
-                <TableRow key={item.id}>
-                  {(columnKey) => (
-                    <TableCell>{getKeyValue(item, columnKey)}</TableCell>
-                  )}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="text-center">
-          <Spinner color="danger" />
-        </div>
-      )}
+      {/* Tabla de trajes */}
+
+      <div className="w-11/12 mx-auto">
+        <Button onClick={onOpen}>Nuevo</Button>
+        <Table aria-label="Tabla de trajes">
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn className="text-red-500" key={column.key}>
+                {column.label}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody items={suits || []}>
+            {(item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.id}</TableCell>
+                <TableCell>{item.color}</TableCell>
+                <TableCell>{item.category}</TableCell>
+                <TableCell>{item.brand}</TableCell>
+                <TableCell>{item.size}</TableCell>
+                <TableCell>{item.state}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row gap-3">
+                    <Button
+                      size="sm"
+                      color="primary"
+                      onClick={() => {
+                        handleEdit(item);
+                      }}
+                    >
+                      Modificar
+                    </Button>
+                    <Button
+                      size="sm"
+                      color="danger"
+                      onClick={() => handleDelete(+item.id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </>
   );
 }

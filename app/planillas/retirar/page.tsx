@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   Table,
   TableBody,
@@ -10,16 +10,16 @@ import {
   Button,
   Spinner,
   useUser,
-} from '@nextui-org/react';
-import { Suit, SuitState } from '@/lib/utils/Suit';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUserState } from '@/lib/utils/UserState';
-import { getCookie } from 'cookies-next';
-import { Booking, BookingState } from '@/lib/utils/Booking';
-import { API_BACKEND } from '@/lib/utils/constanst';
-import { format } from 'date-fns';
-import toast from 'react-hot-toast';
+} from "@nextui-org/react";
+import { Suit, SuitState } from "@/lib/utils/Suit";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUserState } from "@/lib/utils/UserState";
+import { getCookie } from "cookies-next";
+import { Booking, BookingState } from "@/lib/utils/Booking";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import { format } from "date-fns";
+import toast from "react-hot-toast";
 
 export default function RetirarLavanderia() {
   const { user, setUser } = useUserState();
@@ -91,28 +91,28 @@ export default function RetirarLavanderia() {
                     soon_booking_date.getMonth(),
                     soon_booking_date.getDate() - 1
                   ),
-                  'dd/MM/yyyy'
+                  "dd/MM/yyyy"
                 )
-              : 'No tiene',
+              : "No tiene",
             actions: (
               <Button
                 size="sm"
                 color="primary"
                 onClick={async () => {
                   const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                    method: 'PATCH',
+                    method: "PATCH",
                     headers: {
-                      'Content-Type': 'application/json',
+                      "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                       state: SuitState.LAVANDERIALIMPIO,
                     }),
                   });
                   if (res.ok) {
-                    toast.success('Traje limpio');
+                    toast.success("Traje limpio");
                     await fetchSuitsLoundry();
                   } else {
-                    toast.error('Error intente nuevamente');
+                    toast.error("Error intente nuevamente");
                   }
                 }}
               >
@@ -122,8 +122,8 @@ export default function RetirarLavanderia() {
           };
         })
         .sort((a: any, b: any) => {
-          const date_splited_a = a.soon_booking.split('/');
-          const date_splited_b = b.soon_booking.split('/');
+          const date_splited_a = a.soon_booking.split("/");
+          const date_splited_b = b.soon_booking.split("/");
           if (date_splited_a.length !== 3 && date_splited_b.length !== 3)
             return 0;
           else if (date_splited_a.length !== 3) return 1;
@@ -177,9 +177,9 @@ export default function RetirarLavanderia() {
                     soon_booking_date.getMonth(),
                     soon_booking_date.getDate() - 1
                   ),
-                  'dd/MM/yyyy'
+                  "dd/MM/yyyy"
                 )
-              : 'No tiene',
+              : "No tiene",
             suit_color: suit.color,
             actions: (
               <Button
@@ -187,19 +187,19 @@ export default function RetirarLavanderia() {
                 color="primary"
                 onClick={async () => {
                   const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                    method: 'PATCH',
+                    method: "PATCH",
                     headers: {
-                      'Content-Type': 'application/json',
+                      "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                       state: SuitState.ENLOCALLIMPIO,
                     }),
                   });
                   if (res.ok) {
-                    toast.success('Traje retirado');
+                    toast.success("Traje retirado");
                     await fetchSuitsLoundry();
                   } else {
-                    toast.error('Error al entregar el traje');
+                    toast.error("Error al entregar el traje");
                   }
                 }}
               >
@@ -209,8 +209,8 @@ export default function RetirarLavanderia() {
           };
         })
         .sort((a: any, b: any) => {
-          const date_splited_a = a.soon_booking.split('/');
-          const date_splited_b = b.soon_booking.split('/');
+          const date_splited_a = a.soon_booking.split("/");
+          const date_splited_b = b.soon_booking.split("/");
           if (date_splited_a.length !== 3 && date_splited_b.length !== 3)
             return 0;
           else if (date_splited_a.length !== 3) return 1;
@@ -232,8 +232,8 @@ export default function RetirarLavanderia() {
   };
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
     if (res.ok) {
@@ -248,14 +248,14 @@ export default function RetirarLavanderia() {
       })();
     } else {
       setUser(null);
-      router.push('/login');
+      router.push("/login");
     }
   };
   useEffect(() => {
-    const token_cookie = getCookie('Authorization');
-    const token = token_cookie ? token_cookie.split(' ')[1] : '';
+    const token_cookie = getCookie("Authorization");
+    const token = token_cookie ? token_cookie.split(" ")[1] : "";
     if (!token) {
-      router.push('/login');
+      router.push("/login");
     } else {
       if (!user) {
         (async () => {
@@ -274,15 +274,15 @@ export default function RetirarLavanderia() {
 
   const columns = [
     {
-      key: 'suit_name',
-      label: 'Traje',
+      key: "suit_name",
+      label: "Traje",
     },
     {
-      key: 'suit_color',
-      label: 'Color',
+      key: "suit_color",
+      label: "Color",
     },
-    { key: 'soon_booking', label: 'Proxima reserva' },
-    { key: 'actions', label: 'Acciones' },
+    { key: "soon_booking", label: "Proxima reserva" },
+    { key: "actions", label: "Acciones" },
   ];
   return (
     <>
@@ -321,7 +321,7 @@ export default function RetirarLavanderia() {
                   emptyContent={
                     isLoading
                       ? null
-                      : 'No hay trajes para retirar de lavanderia'
+                      : "No hay trajes para retirar de lavanderia"
                   }
                   loadingContent={<Spinner color="white" />}
                 >
@@ -363,7 +363,7 @@ export default function RetirarLavanderia() {
                   items={suitsInLoundry}
                   isLoading={isLoading}
                   emptyContent={
-                    isLoading ? null : 'No hay trajes  en lavanderia'
+                    isLoading ? null : "No hay trajes  en lavanderia"
                   }
                   loadingContent={<Spinner color="white" />}
                 >
