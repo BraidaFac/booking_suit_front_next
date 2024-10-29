@@ -1,5 +1,5 @@
 "use client";
-import { Button, Spinner } from "@nextui-org/react";
+import { Button, Input, Spinner } from "@nextui-org/react";
 import {
   Table,
   TableHeader,
@@ -83,7 +83,9 @@ const fetcher = async (url: string) => {
 export default function Reservas() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-
+  const [filteredBookings, setFilteredBookings] = useState<
+    Booking[] | undefined
+  >(undefined);
   // Usar SWR para obtener las reservas
   const {
     data: bookings,
@@ -106,7 +108,20 @@ export default function Reservas() {
       },
     }
   );
-
+  const handleSearch = (value: string) => {
+    if (value === "") {
+      return setFilteredBookings(bookings);
+    }
+    let searchTermLower = value.toLowerCase();
+    const filtered = bookings?.filter(
+      (booking: Booking) =>
+        booking.suit.id.toLowerCase().includes(searchTermLower) ||
+        booking.client_name.toLowerCase().includes(searchTermLower) ||
+        booking.client_phone.toLowerCase().includes(searchTermLower) ||
+        booking.client_dni.toLowerCase().includes(searchTermLower)
+    );
+    setFilteredBookings(filtered);
+  };
   // Redirigir si el usuario es LOUNDRY
   useEffect(() => {
     if (!isAuthLoading && user?.role === "LAUNDRY") {
@@ -199,6 +214,13 @@ export default function Reservas() {
   return (
     <div className="p-3">
       <p className="text-center text-3xl text-red-700">Historial reservas</p>
+      <Input
+        placeholder="Filtrar por traje, nombre o teléfono"
+        onValueChange={(value) => {
+          handleSearch(value);
+        }}
+        className="mb-4"
+      />
       <Table
         isHeaderSticky
         bottomContent={
@@ -220,7 +242,7 @@ export default function Reservas() {
           )}
         </TableHeader>
         <TableBody
-          items={bookings || []}
+          items={filteredBookings || bookings}
           isLoading={isBookingsLoading}
           emptyContent={isBookingsLoading ? null : "No hay reservas"}
           loadingContent={<Spinner color="white" />}

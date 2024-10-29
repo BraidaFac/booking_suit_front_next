@@ -27,6 +27,7 @@ export default function Devolucion() {
   const [bookingsToReturn, setBookingsToReturn] = useState<
     {
       key: number;
+      suit_id: string;
       client_name: string;
       client_phone: string;
       booking_date: string;
@@ -50,10 +51,12 @@ export default function Devolucion() {
       }
       return 0;
     });
+
     setBookingsToReturn(
       bookingstoReturn.map((booking: Booking) => {
         return {
           key: booking.id,
+          suit_id: booking.suit.id,
           client_name: booking.client_name,
           client_phone: booking.client_phone,
           booking_date: format(new Date(booking.booking_date), "dd-MM-yyyy"),
@@ -140,6 +143,7 @@ export default function Devolucion() {
     }
   }, []);
   const columns = [
+    { key: "suit_id", label: "Traje" },
     { key: "client_name", label: "Nombre" },
     { key: "client_phone", label: "Telefono" },
     { key: "booking_date", label: "Fecha" },
