@@ -24,6 +24,7 @@ import CalendarReservas from "@/lib/components/CalendarReservas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatMonth } from "@/lib/utils/date_formatter";
+import { getState, SuitState } from "@/lib/utils/Suit";
 
 // Función para obtener las reservas
 const fetcher = async (url: string) => {
@@ -303,7 +304,8 @@ export default function Diario() {
                     <strong>Color:</strong> {selectedBooking.suit.color}
                   </p>
                   <p>
-                    <strong>Estado:</strong> {selectedBooking.suit.state}
+                    <strong>Estado:</strong>{" "}
+                    {getState(selectedBooking.suit.state as SuitState)}
                   </p>
                 </div>
               </ModalBody>

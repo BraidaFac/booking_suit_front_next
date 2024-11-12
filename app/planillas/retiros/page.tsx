@@ -9,9 +9,10 @@ import {
   getKeyValue,
   Button,
   Spinner,
+  Chip,
 } from "@nextui-org/react";
 import { Booking, BookingState } from "@/lib/utils/Booking";
-import { SuitState } from "@/lib/utils/Suit";
+import { getState, SuitState } from "@/lib/utils/Suit";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,18 @@ import { getCookie } from "cookies-next";
 import { API_BACKEND } from "@/lib/utils/constanst";
 import toast from "react-hot-toast";
 
+// Define un tipo para los colores válidos
+type StatusColor = "success" | "danger" | "warning" | "primary";
+
+// Define el objeto mapeado con claves de SuitState y valores de StatusColor
+const statusColorMap: { [key in SuitState]: StatusColor } = {
+  [SuitState.ENLOCALLIMPIO]: "success",
+  [SuitState.ENLOCALSUCIO]: "danger",
+  [SuitState.LAVANDERIALIMPIO]: "warning",
+  [SuitState.LAVANDERIASUCIO]: "warning",
+  [SuitState.MODISTA]: "success",
+  [SuitState.RETIRADO]: "primary",
+};
 export default function Retiros() {
   const [isLoading, setIsLoading] = useState(true);
   const { user, setUser } = useUserState();
@@ -30,6 +43,7 @@ export default function Retiros() {
       client_name: string;
       client_phone: string;
       suit: number;
+      suit_state: SuitState;
       dress_maker: string;
       observations: string;
       booking_date: string;
@@ -74,6 +88,7 @@ export default function Retiros() {
           client_name: booking.client_name,
           client_phone: booking.client_phone,
           suit: booking.suit.id,
+          suit_state: booking.suit.state,
           dress_maker: booking.dressmaker ? "Si" : "No",
           observation: booking.observations,
           booking_date: format(new Date(booking.booking_date), "dd/MM/yyyy"),
@@ -173,6 +188,10 @@ export default function Retiros() {
       label: "Traje",
     },
     {
+      key: "suit_state",
+      label: "Estado del traje",
+    },
+    {
       key: "booking_date",
       label: "Fecha de reserva",
     },
@@ -220,7 +239,18 @@ export default function Retiros() {
               {(item) => (
                 <TableRow key={item.key}>
                   {(columnKey) => (
-                    <TableCell>{getKeyValue(item, columnKey)}</TableCell>
+                    <TableCell className="p-1">
+                      {columnKey === "suit_state" ? (
+                        <Chip
+                          className="p-0"
+                          color={statusColorMap[item.suit_state]}
+                        >
+                          {getState(item.suit_state)}
+                        </Chip>
+                      ) : (
+                        getKeyValue(item, columnKey)
+                      )}
+                    </TableCell>
                   )}
                 </TableRow>
               )}
