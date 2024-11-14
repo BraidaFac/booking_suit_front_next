@@ -11,6 +11,7 @@ export interface Suit {
 export enum SuitState {
   ENLOCALSUCIO = "ENLOCALSUCIO",
   ENLOCALLIMPIO = "ENLOCALLIMPIO",
+  LISTOENTREGA = "LISTOENTREGA",
   RETIRADO = "RETIRADO",
   LAVANDERIALIMPIO = "LAVANDERIALIMPIO",
   LAVANDERIASUCIO = "LAVANDERIASUCIO",
@@ -31,5 +32,7 @@ export function getState(state: SuitState) {
       return "Lavanderia sucio";
     case SuitState.MODISTA:
       return "Modista";
+    case SuitState.LISTOENTREGA:
+      return "Listo para entregar";
   }
 }

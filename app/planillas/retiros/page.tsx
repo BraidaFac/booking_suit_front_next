@@ -26,12 +26,13 @@ type StatusColor = "success" | "danger" | "warning" | "primary";
 
 // Define el objeto mapeado con claves de SuitState y valores de StatusColor
 const statusColorMap: { [key in SuitState]: StatusColor } = {
-  [SuitState.ENLOCALLIMPIO]: "success",
+  [SuitState.ENLOCALLIMPIO]: "warning",
   [SuitState.ENLOCALSUCIO]: "danger",
-  [SuitState.LAVANDERIALIMPIO]: "warning",
-  [SuitState.LAVANDERIASUCIO]: "warning",
-  [SuitState.MODISTA]: "success",
+  [SuitState.LAVANDERIALIMPIO]: "danger",
+  [SuitState.LAVANDERIASUCIO]: "danger",
+  [SuitState.MODISTA]: "warning",
   [SuitState.RETIRADO]: "primary",
+  [SuitState.LISTOENTREGA]: "success",
 };
 export default function Retiros() {
   const [isLoading, setIsLoading] = useState(true);
@@ -92,36 +93,127 @@ export default function Retiros() {
           dress_maker: booking.dressmaker ? "Si" : "No",
           observation: booking.observations,
           booking_date: format(new Date(booking.booking_date), "dd/MM/yyyy"),
-          actions: (
-            <Button
-              size="sm"
-              color="primary"
-              onClick={async () => {
-                const res = await fetch(
-                  `${API_BACKEND}/booking/${booking.id}/estados`,
-                  {
-                    method: "PATCH",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      booking_state: BookingState.INPROGRESS,
-                      suit_state: SuitState.RETIRADO,
-                      booking_retired_suit: new Date(),
-                    }),
-                  }
-                );
-                if (res.ok) {
-                  toast.success("Traje retirado");
-                  await fetchNearBookings();
-                } else {
-                  toast.error("Error al retirar el traje");
-                }
-              }}
-            >
-              Retirado
-            </Button>
-          ),
+          actions:
+            booking.suit.state === SuitState.LISTOENTREGA ? (
+              <div className="flex flex-row justify-center">
+                <Button
+                  size="sm"
+                  className="p-2 min-w-6"
+                  color="primary"
+                  onClick={async () => {
+                    const res = await fetch(
+                      `${API_BACKEND}/booking/${booking.id}/estados`,
+                      {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          booking_state: BookingState.INPROGRESS,
+                          suit_state: SuitState.RETIRADO,
+                          booking_retired_suit: new Date(),
+                        }),
+                      }
+                    );
+                    if (res.ok) {
+                      toast.success("Traje retirado");
+                      await fetchNearBookings();
+                    } else {
+                      toast.error("Error al retirar el traje");
+                    }
+                  }}
+                >
+                  Retiró
+                </Button>
+              </div>
+            ) : booking.suit.state === SuitState.MODISTA ? (
+              <div className="flex flex-row gap-1 justify-center">
+                <Button
+                  size="sm"
+                  className="p-1 min-w-6"
+                  color="success"
+                  onClick={async () => {
+                    const res = await fetch(
+                      `${API_BACKEND}/booking/${booking.id}/estados`,
+                      {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          suit_state: SuitState.LISTOENTREGA,
+                        }),
+                      }
+                    );
+                    if (res.ok) {
+                      toast.success("Traje listo para entregar");
+                      await fetchNearBookings();
+                    } else {
+                      toast.error("Error intente nuevamente");
+                    }
+                  }}
+                >
+                  Traje Listo
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-row gap-1 justify-center">
+                <Button
+                  size="sm"
+                  className="p-2 min-w-6"
+                  color="warning"
+                  onClick={async () => {
+                    const res = await fetch(
+                      `${API_BACKEND}/booking/${booking.id}/estados`,
+                      {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          suit_state: SuitState.MODISTA,
+                        }),
+                      }
+                    );
+                    if (res.ok) {
+                      toast.success("Traje en Modista");
+                      await fetchNearBookings();
+                    } else {
+                      toast.error("Error intente nuevamente");
+                    }
+                  }}
+                >
+                  Modista
+                </Button>
+                <Button
+                  size="sm"
+                  className="p-1 min-w-6"
+                  color="success"
+                  onClick={async () => {
+                    const res = await fetch(
+                      `${API_BACKEND}/booking/${booking.id}/estados`,
+                      {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          suit_state: SuitState.LISTOENTREGA,
+                        }),
+                      }
+                    );
+                    if (res.ok) {
+                      toast.success("Traje listo para entregar");
+                      await fetchNearBookings();
+                    } else {
+                      toast.error("Error intente nuevamente");
+                    }
+                  }}
+                >
+                  Traje Listo
+                </Button>
+              </div>
+            ),
         };
       })
     );
@@ -208,7 +300,7 @@ export default function Retiros() {
   return (
     <>
       {!isLoading ? (
-        <div>
+        <div className="ml-3">
           <div className="header">
             <p className="text-3xl text-red-800 text-center">
               Proximos retiros
@@ -227,7 +319,9 @@ export default function Retiros() {
           >
             <TableHeader columns={columns}>
               {(column) => (
-                <TableColumn key={column.key}>{column.label}</TableColumn>
+                <TableColumn className="p-2" key={column.key}>
+                  {column.label}
+                </TableColumn>
               )}
             </TableHeader>
             <TableBody

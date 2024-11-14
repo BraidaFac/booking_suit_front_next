@@ -1,10 +1,10 @@
-'use client';
+"use client";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-} from '@heroicons/react/24/solid/index.js';
-import { Textarea } from '@nextui-org/react';
-import { formatMonth } from '../utils/date_formatter';
+} from "@heroicons/react/24/solid/index.js";
+import { Textarea } from "@nextui-org/react";
+import { formatMonth } from "../utils/date_formatter";
 import {
   add,
   eachDayOfInterval,
@@ -16,12 +16,12 @@ import {
   startOfToday,
   isBefore,
   isSameDay,
-} from 'date-fns';
-import { useEffect, useState } from 'react';
-import { useSuitContext } from './SuitContext';
-import { Booking, BookingState } from '../utils/Booking';
-import { SuitState, getState } from '../utils/Suit';
-import { API_BACKEND } from '../utils/constanst';
+} from "date-fns";
+import { useEffect, useState } from "react";
+import { useSuitContext } from "./SuitContext";
+import { Booking, BookingState } from "../utils/Booking";
+import { SuitState, getState } from "../utils/Suit";
+import { API_BACKEND } from "../utils/constanst";
 import {
   Modal,
   ModalContent,
@@ -31,10 +31,10 @@ import {
   Button,
   useDisclosure,
   Input,
-} from '@nextui-org/react';
-import toast from 'react-hot-toast';
+} from "@nextui-org/react";
+import toast from "react-hot-toast";
 function classNames(...classes: any) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 } /*  */
 
 function isFuture(day: any) {
@@ -45,8 +45,8 @@ export default function Calendar() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [formError, setFormError] = useState(false);
   const today = startOfToday();
-  const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
-  const firstDayCurrentMonth = parse(currentMonth, 'MMM-yyyy', new Date());
+  const [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));
+  const firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
   const [selectedDay, setSelectedDay] = useState<Date>();
   const [selectedBookingToCancel, setSelectedBookingToCancel] =
     useState<Booking>();
@@ -67,17 +67,17 @@ export default function Calendar() {
   });
   function previousMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
-    setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
   function nextMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
-    setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
 
   //Booking functions
   const fetchBookingbySuit = async () => {
     const res = await fetch(`${API_BACKEND}/booking/suit/${suit.id}`, {
-      method: 'GET',
+      method: "GET",
     });
     const data = await res.json();
 
@@ -86,10 +86,10 @@ export default function Calendar() {
 
   const getBusyDays = async () => {
     const res = await fetch(`${API_BACKEND}/booking/suit/${suit.id}/fechas`, {
-      method: 'GET',
+      method: "GET",
     });
     if (!res.ok) {
-      toast.error('Error');
+      toast.error("Error");
       return;
     }
     const data = await res.json();
@@ -147,7 +147,7 @@ export default function Calendar() {
               Traje {suit.id}
             </h1>
             <h2 className="text-2xl text-white text-left">
-              Estado:{' '}
+              Estado:{" "}
               <span className="text-red-700">{getState(suit.state)}</span>
             </h2>
           </div>
@@ -188,7 +188,7 @@ export default function Calendar() {
                   key={day.toString()}
                   className={classNames(
                     dayIdx === 0 && colStartClasses[getDay(day)],
-                    'md:h-28 h-14 w-full border-solid border-2 border-white'
+                    "md:h-28 h-14 w-full border-solid border-2 border-white"
                   )}
                 >
                   <button
@@ -215,30 +215,30 @@ export default function Calendar() {
                     }
                     type="button"
                     className={classNames(
-                      'text-white',
-                      isToday(day) && 'text-white',
-                      !isToday(day) && 'text-gray-900',
-                      'font-semibold',
-                      isFuture(day) && 'bg-green-400',
+                      "text-white",
+                      isToday(day) && "text-white",
+                      !isToday(day) && "text-gray-900",
+                      "font-semibold",
+                      isFuture(day) && "bg-green-400",
                       bookings.filter((booking) =>
                         isSameDay(day, new Date(booking.booking_date))
-                      ).length > 0 && 'bg-red-400',
+                      ).length > 0 && "bg-red-400",
                       busyDaysDressmaker.filter((busyDay) =>
                         isSameDay(day, new Date(busyDay))
-                      ).length > 0 && 'bg-yellow-400',
+                      ).length > 0 && "bg-yellow-400",
                       busyDaysLaundry.filter((busyDay) =>
                         isSameDay(day, new Date(busyDay))
-                      ).length > 0 && 'bg-yellow-400',
+                      ).length > 0 && "bg-yellow-400",
                       busyDaysPreparation.filter((busyDay) =>
                         isSameDay(day, new Date(busyDay))
-                      ).length > 0 && 'bg-yellow-400',
-                      'w-full  h-full flex flex-col justify-center',
-                      isToday(day) && 'bg-blue-400'
+                      ).length > 0 && "bg-yellow-400",
+                      "w-full  h-full flex flex-col justify-center",
+                      isToday(day) && "bg-blue-400"
                     )}
                   >
                     <div className="self-center">
-                      <time dateTime={format(day, 'yyyy-MM-dd')}>
-                        {format(day, 'd')}
+                      <time dateTime={format(day, "yyyy-MM-dd")}>
+                        {format(day, "d")}
                       </time>
 
                       {bookings
@@ -258,7 +258,7 @@ export default function Calendar() {
                             className="self-center hidden"
                             key={day.toISOString()}
                           >
-                            {' '}
+                            {" "}
                             MODISTA
                           </div>
                         ))}
@@ -280,7 +280,7 @@ export default function Calendar() {
                             className="self-center hidden"
                             key={day.toISOString()}
                           >
-                            {' '}
+                            {" "}
                             EN LOCAL
                           </div>
                         ))}
@@ -297,7 +297,7 @@ export default function Calendar() {
         onOpenChange={onOpenChange}
         placement="center"
         backdrop="blur"
-        className={`${selectedDay ? 'h-5/6' : ''} overflow-auto`}
+        className={`${selectedDay ? "h-5/6" : ""} overflow-auto`}
         onClose={() => {
           setFormError(false);
           setSelectedDay(undefined);
@@ -348,7 +348,7 @@ export default function Calendar() {
                     <Input
                       isRequired
                       label="Fecha evento"
-                      value={format(selectedDay, 'yyyy-MM-dd')}
+                      value={format(selectedDay, "yyyy-MM-dd")}
                       type="text"
                       name="booking_date"
                     ></Input>
@@ -383,20 +383,20 @@ export default function Calendar() {
                     onClick={async (e) => {
                       e.preventDefault();
                       const form = document.getElementById(
-                        'booking-form'
+                        "booking-form"
                       ) as HTMLFormElement;
                       if (form) {
                         const formData = new FormData(form);
-                        const suit_id = formData.get('suit_id');
-                        const booking_date = formData.get('booking_date');
-                        const dressmaker = formData.get('dressmaker')
+                        const suit_id = formData.get("suit_id");
+                        const booking_date = formData.get("booking_date");
+                        const dressmaker = formData.get("dressmaker")
                           ? true
                           : false;
-                        const client_dni = formData.get('client_dni');
-                        const client_name = formData.get('client_name');
-                        const client_phone = formData.get('client_phone');
-                        const observations = formData.get('observations');
-                        const account_related = formData.get('account_related');
+                        const client_dni = formData.get("client_dni");
+                        const client_name = formData.get("client_name");
+                        const client_phone = formData.get("client_phone");
+                        const observations = formData.get("observations");
+                        const account_related = formData.get("account_related");
 
                         if (
                           !client_dni ||
@@ -408,9 +408,9 @@ export default function Calendar() {
                           return;
                         }
                         const response = await fetch(`${API_BACKEND}/booking`, {
-                          method: 'POST',
+                          method: "POST",
                           headers: {
-                            'Content-Type': 'application/json',
+                            "Content-Type": "application/json",
                           },
                           body: JSON.stringify({
                             suit: {
@@ -426,12 +426,12 @@ export default function Calendar() {
                           }),
                         });
                         if (response.status === 201) {
-                          toast.success('Reserva exitosa');
+                          toast.success("Reserva exitosa");
                           fetchBookingbySuit();
                           getBusyDays();
                           onClose();
                         } else {
-                          toast.error('Fechas solapadas');
+                          toast.error("Fechas solapadas");
                         }
                       }
                     }}
@@ -448,19 +448,16 @@ export default function Calendar() {
                 </ModalHeader>
                 <ModalBody>
                   <Button
-                    isDisabled={
-                      suit.state === SuitState.RETIRADO ||
-                      suit.state === SuitState.ENLOCALSUCIO
-                    }
+                    isDisabled={suit.state !== SuitState.LISTOENTREGA}
                     color="primary"
                     variant="light"
                     onPress={async () => {
                       const res = await fetch(
                         `${API_BACKEND}/booking/${selectedBookingToCancel?.id}/estados`,
                         {
-                          method: 'PATCH',
+                          method: "PATCH",
                           headers: {
-                            'Content-Type': 'application/json',
+                            "Content-Type": "application/json",
                           },
                           body: JSON.stringify({
                             booking_state: BookingState.INPROGRESS,
@@ -470,7 +467,7 @@ export default function Calendar() {
                         }
                       );
                       if (res.ok) {
-                        toast.success('Traje retirado');
+                        toast.success("Traje retirado");
 
                         const suit = (await res.json()).suit;
 
@@ -478,26 +475,23 @@ export default function Calendar() {
                         await fetchBookingbySuit();
                         onClose();
                       } else {
-                        toast.error('Error al retirar el traje');
+                        toast.error("Error al retirar el traje");
                       }
                     }}
                   >
                     RETIRO
                   </Button>
                   <Button
-                    isDisabled={
-                      suit.state === SuitState.ENLOCALLIMPIO ||
-                      suit.state === SuitState.ENLOCALSUCIO
-                    }
+                    isDisabled={suit.state !== SuitState.RETIRADO}
                     color="primary"
                     variant="light"
                     onPress={async () => {
                       const res = await fetch(
                         `${API_BACKEND}/booking/${selectedBookingToCancel?.id}/estados`,
                         {
-                          method: 'PATCH',
+                          method: "PATCH",
                           headers: {
-                            'Content-Type': 'application/json',
+                            "Content-Type": "application/json",
                           },
                           body: JSON.stringify({
                             booking_state: BookingState.COMPLETED,
@@ -509,16 +503,16 @@ export default function Calendar() {
 
                       if (res.ok) {
                         if (selectedBookingToCancel?.dressmaker) {
-                          toast.success('Recordar que fue con modista');
+                          toast.success("Recordar que fue con modista");
                         }
-                        toast.success('Traje devuelto');
+                        toast.success("Traje devuelto");
 
                         const suitUpdated = (await res.json()).suit;
                         setSuit(suitUpdated);
                         await fetchBookingbySuit();
                         onClose();
                       } else {
-                        toast.error('Error al devolver el traje');
+                        toast.error("Error al devolver el traje");
                       }
                     }}
                   >
@@ -532,7 +526,7 @@ export default function Calendar() {
                       const response = await fetch(
                         `${API_BACKEND}/booking/${selectedBookingToCancel?.id}`,
                         {
-                          method: 'DELETE',
+                          method: "DELETE",
                         }
                       );
                       console.log(await response.json());
@@ -541,9 +535,9 @@ export default function Calendar() {
                         await fetchBookingbySuit();
                         await getBusyDays();
                         onClose();
-                        toast.success('Reserva cancelada');
+                        toast.success("Reserva cancelada");
                       } else {
-                        toast.error('Error al cancelar la reserva');
+                        toast.error("Error al cancelar la reserva");
                       }
                     }}
                   >
@@ -566,11 +560,11 @@ export default function Calendar() {
 }
 
 let colStartClasses = [
-  '',
-  'col-start-2',
-  'col-start-3',
-  'col-start-4',
-  'col-start-5',
-  'col-start-6',
-  'col-start-7',
+  "",
+  "col-start-2",
+  "col-start-3",
+  "col-start-4",
+  "col-start-5",
+  "col-start-6",
+  "col-start-7",
 ];
