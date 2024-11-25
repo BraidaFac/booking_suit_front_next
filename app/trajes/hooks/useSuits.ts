@@ -28,12 +28,11 @@ export const useSuits = () => {
     }
   };
 
-  const deleteSuit = async (suitId: number) => {
+  const deleteSuit = async (suitId: string) => {
     const res = await fetch(`${API_BACKEND}/suit/${suitId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        cors: "no-cors",
       },
     });
 

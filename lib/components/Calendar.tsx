@@ -109,8 +109,6 @@ export default function Calendar() {
   };
 
   useEffect(() => {
-    console.log(suit);
-
     if (suit) {
       try {
         fetchBookingbySuit();
@@ -352,13 +350,20 @@ export default function Calendar() {
                       type="text"
                       name="booking_date"
                     ></Input>
+                    <Input
+                      label="Largo Manga"
+                      type="text"
+                      name="l_manga"
+                    ></Input>
+                    <Input
+                      label="Largo Pierna"
+                      type="text"
+                      name="l_pierna"
+                    ></Input>
                     <Textarea
-                      isRequired
                       label="Observaciones"
-                      labelPlacement="inside"
-                      className="max-w-xs"
                       name="observations"
-                    />
+                    ></Textarea>
                     <div className="flex flex-row gap-3 p-2">
                       <label className="text-black ">Modista</label>
                       <input
@@ -395,8 +400,16 @@ export default function Calendar() {
                         const client_dni = formData.get("client_dni");
                         const client_name = formData.get("client_name");
                         const client_phone = formData.get("client_phone");
-                        const observations = formData.get("observations");
+                        const observations_form = formData.get("observations");
+                        const l_manga = formData.get("l_manga");
+                        const l_pierna = formData.get("l_pierna");
                         const account_related = formData.get("account_related");
+                        const observations = `${
+                          l_manga ? "L.Manga: " + l_manga : ""
+                        }\n ${
+                          l_pierna ? "L.Pierna: " + l_pierna : ""
+                        }\n Otros: ${observations_form}`;
+                        console.log(observations);
 
                         if (
                           !client_dni ||

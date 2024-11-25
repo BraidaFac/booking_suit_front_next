@@ -83,7 +83,7 @@ export default function SuitsPage() {
   };
 
   // Lógica para eliminar un traje
-  const handleDelete = async (suitId: number) => {
+  const handleDelete = async (suitId: string) => {
     const success = await deleteSuit(suitId);
     if (success) {
       mutate(); // Revalida la lista de trajes tras la eliminación
@@ -206,7 +206,7 @@ export default function SuitsPage() {
                       {errors.category.message}
                     </span>
                   )}
-                  {isEditing && (
+                  {/* {isEditing && (
                     <>
                       <Select {...register("state")} label="Estado del traje">
                         <SelectItem
@@ -252,7 +252,7 @@ export default function SuitsPage() {
                         </span>
                       )}
                     </>
-                  )}
+                  )} */}
                   <Button className="mt-4" type="submit" color="primary">
                     Guardar
                   </Button>
@@ -265,7 +265,9 @@ export default function SuitsPage() {
       {/* Tabla de trajes */}
 
       <div className="w-11/12 mx-auto">
-        <Button onClick={onOpen}>Nuevo</Button>
+        <Button onClick={onOpen} color="success" className="mb-2">
+          Nuevo
+        </Button>
         <Table aria-label="Tabla de trajes">
           <TableHeader columns={columns}>
             {(column) => (
@@ -297,7 +299,7 @@ export default function SuitsPage() {
                     <Button
                       size="sm"
                       color="danger"
-                      onClick={() => handleDelete(+item.id)}
+                      onClick={async () => await handleDelete(item.id)}
                     >
                       Eliminar
                     </Button>
