@@ -40,7 +40,7 @@ export default function Devolucion() {
     const bookings = await res.json();
 
     const bookingstoReturn = bookings.filter(
-      (booking: Booking) => booking.suit.state === SuitState.RETIRADO
+      (booking: Booking) => booking.booking_state === BookingState.INPROGRESS
     );
     bookingsToReturn.sort((a, b) => {
       if (a.booking_date < b.booking_date) {
@@ -146,7 +146,7 @@ export default function Devolucion() {
     { key: "suit_id", label: "Traje" },
     { key: "client_name", label: "Nombre" },
     { key: "client_phone", label: "Telefono" },
-    { key: "booking_date", label: "Fecha" },
+    { key: "booking_date", label: "Fecha Reserva" },
     { key: "actions", label: "Acciones" },
   ];
   return (
