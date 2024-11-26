@@ -40,7 +40,7 @@ export default function Devolucion() {
     const bookings = await res.json();
 
     const bookingstoReturn = bookings.filter(
-      (booking: Booking) => booking.booking_state === BookingState.INPROGRESS
+      (booking: Booking) => booking.suit.state === SuitState.RETIRADO
     );
     bookingsToReturn.sort((a, b) => {
       if (a.booking_date < b.booking_date) {
