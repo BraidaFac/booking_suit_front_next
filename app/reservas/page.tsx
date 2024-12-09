@@ -109,7 +109,7 @@ export default function Reservas() {
     }
   );
   const handleSearch = (value: string) => {
-    if (value === "") {
+    if (!value) {
       return setFilteredBookings(bookings);
     }
     let searchTermLower = value.toLowerCase();

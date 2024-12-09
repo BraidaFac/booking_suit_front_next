@@ -10,6 +10,7 @@ import {
   Button,
   Spinner,
   Chip,
+  Input,
 } from "@nextui-org/react";
 import { Booking, BookingState } from "@/lib/utils/Booking";
 import { getState, SuitState } from "@/lib/utils/Suit";
@@ -43,6 +44,21 @@ type ConfirmationModalRef = {
 export default function Retiros() {
   const [isLoading, setIsLoading] = useState(true);
   const { user, setUser } = useUserState();
+  const [filteredBookings, setFilteredBookings] = useState<
+    | {
+        key: number;
+        client_name: string;
+        client_phone: string;
+        suit: string;
+        suit_state: SuitState;
+        dress_maker: string;
+        observations: string;
+        booking_date: string;
+        actions: JSX.Element;
+      }[]
+    | undefined
+  >(undefined);
+
   const router = useRouter();
 
   const modalRef = useRef<ConfirmationModalRef>(null); // Referencia para el modal
@@ -58,7 +74,7 @@ export default function Retiros() {
       key: number;
       client_name: string;
       client_phone: string;
-      suit: number;
+      suit: string;
       suit_state: SuitState;
       dress_maker: string;
       observations: string;
@@ -272,6 +288,31 @@ export default function Retiros() {
       router.push("/login");
     }
   };
+
+  const handleSearch = (value: string) => {
+    if (!value) {
+      setFilteredBookings(nearBookings);
+    }
+    let searchTermLower = value.toLowerCase();
+    const filtered = nearBookings?.filter(
+      (booking: {
+        key: number;
+        client_name: string;
+        client_phone: string;
+        suit: string;
+        suit_state: SuitState;
+        dress_maker: string;
+        observations: string;
+        booking_date: string;
+        actions: JSX.Element;
+      }) =>
+        booking.suit.toLowerCase().includes(searchTermLower) ||
+        booking.client_name.toLowerCase().includes(searchTermLower) ||
+        booking.client_phone.toLowerCase().includes(searchTermLower)
+    );
+    setFilteredBookings(filtered);
+  };
+
   useEffect(() => {
     const token_cookie = getCookie("Authorization");
     const token = token_cookie ? token_cookie.split(" ")[1] : "";
@@ -338,6 +379,13 @@ export default function Retiros() {
             <p className="text-3xl text-red-800 text-center">
               Proximos retiros
             </p>
+            <Input
+              placeholder="Filtrar por traje, nombre o teléfono"
+              onValueChange={(value) => {
+                handleSearch(value);
+              }}
+              className="mb-4"
+            />
           </div>
           <Table
             aria-label="Example table with dynamic content"
@@ -358,7 +406,7 @@ export default function Retiros() {
               )}
             </TableHeader>
             <TableBody
-              items={nearBookings}
+              items={filteredBookings || nearBookings}
               isLoading={isLoading}
               emptyContent={isLoading ? null : "No hay reservas proximas"}
               loadingContent={<Spinner color="white" />}

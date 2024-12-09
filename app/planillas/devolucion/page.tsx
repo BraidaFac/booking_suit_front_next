@@ -13,6 +13,7 @@ import {
   getKeyValue,
   Button,
   Spinner,
+  Input,
 } from "@nextui-org/react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,17 @@ import toast from "react-hot-toast";
 
 export default function Devolucion() {
   const [isLoading, setIsLoading] = useState(true);
+  const [filteredBookings, setFilteredBookings] = useState<
+    | {
+        key: number;
+        suit_id: string;
+        client_name: string;
+        client_phone: string;
+        booking_date: string;
+        actions: JSX.Element;
+      }[]
+    | undefined
+  >(undefined);
   const { user, setUser } = useUserState();
   const router = useRouter();
   const [bookingsToReturn, setBookingsToReturn] = useState<
@@ -95,6 +107,28 @@ export default function Devolucion() {
       })
     );
   };
+
+  const handleSearch = (value: string) => {
+    if (value === "") {
+      return setFilteredBookings(bookingsToReturn);
+    }
+    let searchTermLower = value.toLowerCase();
+    const filtered = bookingsToReturn?.filter(
+      (booking: {
+        key: number;
+        suit_id: string;
+        client_name: string;
+        client_phone: string;
+        booking_date: string;
+        actions: JSX.Element;
+      }) =>
+        booking.suit_id.toLowerCase().includes(searchTermLower) ||
+        booking.client_name.toLowerCase().includes(searchTermLower) ||
+        booking.client_phone.toLowerCase().includes(searchTermLower)
+    );
+    setFilteredBookings(filtered);
+  };
+
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
       method: "POST",
@@ -162,6 +196,13 @@ export default function Devolucion() {
               <p className="text-3xl text-red-800 text-center">
                 Recordar devolucion
               </p>
+              <Input
+                placeholder="Filtrar por traje, nombre o teléfono"
+                onValueChange={(value) => {
+                  handleSearch(value);
+                }}
+                className="mb-4"
+              />
             </div>
             <div>
               <Table
@@ -181,7 +222,7 @@ export default function Devolucion() {
                   )}
                 </TableHeader>
                 <TableBody
-                  items={bookingsToReturn}
+                  items={filteredBookings || bookingsToReturn}
                   isLoading={isLoading}
                   emptyContent={
                     isLoading ? null : "No hay trajes para devolver"
