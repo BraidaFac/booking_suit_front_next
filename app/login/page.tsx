@@ -1,11 +1,11 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useEffect, useState } from 'react';
-import { Button, Input } from '@nextui-org/react';
-import CookiesUtils from '../../lib/utils/cookies';
-import { useUserState } from '@/lib/utils/UserState';
-import { API_BACKEND } from '@/lib/utils/constanst';
-import { deleteCookie, setCookie } from 'cookies-next';
+"use client";
+import { useUserState } from "@/lib/utils/UserState";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import { Button, Input } from "@nextui-org/react";
+import { deleteCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import CookiesUtils from "../../lib/utils/cookies";
 export default function Login() {
   const { user, setUser } = useUserState();
   const router = useRouter();
@@ -13,12 +13,12 @@ export default function Login() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const userName = formData.get('username');
-    const password = formData.get('password');
+    const userName = formData.get("username");
+    const password = formData.get("password");
 
     const response = await fetch(`${API_BACKEND}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userName, password }),
     });
 
@@ -26,30 +26,30 @@ export default function Login() {
       setError(false);
       const { access_token, user } = await response.json();
       const token = `Bearer ${access_token}`;
-      CookiesUtils.setItem('Authorization', token);
+      CookiesUtils.setItem("Authorization", token);
       setUser({
         name: user.name,
         role: user.role,
       });
-      if (user.role === 'LAUNDRY') {
-        router.push('planillas/retirar');
+      if (user.role === "LAUNDRY") {
+        router.push("planillas/retirar");
       } else {
-        router.push('/');
+        router.push("/");
       }
     } else {
       setError(true);
     }
   }
   useEffect(() => {
-    const token_cookie = CookiesUtils.getItem('Authorization');
+    const token_cookie = CookiesUtils.getItem("Authorization");
     if (!token_cookie) {
       setUser(null);
     } else {
-      const token = token_cookie.split(' ')[1];
+      const token = token_cookie.split(" ")[1];
       (async () => {
         const res = await fetch(`${API_BACKEND}/auth/validate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
         });
         if (res.ok) {
@@ -58,14 +58,14 @@ export default function Login() {
             name: username,
             role: role,
           });
-          if (role === 'LOUNDRY') {
-            router.push('/planillas/retirar');
+          if (role === "LOUNDRY") {
+            router.push("/planillas/retirar");
           } else {
-            router.push('/');
+            router.push("/");
           }
         } else {
           setUser(null);
-          deleteCookie('Authorization');
+          deleteCookie("Authorization");
         }
       })();
     }

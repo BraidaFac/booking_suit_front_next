@@ -1,6 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suit } from "@/lib/utils/Suit";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Button,
   Input,
@@ -17,18 +17,14 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  getKeyValue,
-  select,
   useDisclosure,
 } from "@nextui-org/react";
-import { Suit, SuitState } from "@/lib/utils/Suit";
-import useSWR from "swr";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
 import * as yup from "yup";
-import { useSuits } from "./hooks/useSuits";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "../login/hooks/useAuth";
-import { clear } from "console";
+import { useSuits } from "./hooks/useSuits";
 
 export default function SuitsPage() {
   const { fetchSuits, deleteSuit, createSuit, updateSuit } = useSuits();
@@ -154,6 +150,7 @@ export default function SuitsPage() {
                 >
                   <Input
                     {...register("id")}
+                    disabled={isEditing}
                     label="Codigo"
                     placeholder="Codigo"
                   />

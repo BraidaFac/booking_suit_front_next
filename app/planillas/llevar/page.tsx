@@ -1,6 +1,10 @@
 "use client";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import { Suit, SuitState } from "@/lib/utils/Suit";
+import { useUserState } from "@/lib/utils/UserState";
 import {
-  NextUIProvider,
+  Button,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -8,15 +12,10 @@ import {
   TableHeader,
   TableRow,
   getKeyValue,
-  Button,
-  Spinner,
 } from "@nextui-org/react";
-import { Suit, SuitState } from "@/lib/utils/Suit";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUserState } from "@/lib/utils/UserState";
 import { getCookie } from "cookies-next";
-import { API_BACKEND } from "@/lib/utils/constanst";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function Planillas() {
@@ -33,7 +32,7 @@ export default function Planillas() {
   >([]);
 
   const fetchSuitToLoundry = async () => {
-    const res = await fetch(`${API_BACKEND}/suit/loundry`);
+    const res = await fetch(`${API_BACKEND}/suit/laundry`);
 
     if (res.status === 200) {
       const suits = await res.json();
@@ -43,29 +42,56 @@ export default function Planillas() {
             suit_id: suit.id,
             suit_color: suit.color,
             actions: (
-              <Button
-                size="sm"
-                color="primary"
-                onClick={async () => {
-                  const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
-                    method: "PATCH",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      state: SuitState.LAVANDERIASUCIO,
-                    }),
-                  });
-                  if (res.ok) {
-                    toast.success("Traje entregado correctamente");
-                    await fetchSuitToLoundry();
-                  } else {
-                    toast.error("Error al entregar traje");
-                  }
-                }}
-              >
-                Entregado a lavanderia
-              </Button>
+              <div className="flex flex-row gap-1 justify-center w-1/2 mx-auto">
+                <Button
+                  size="sm"
+                  className="max-w-26 min-w-26"
+                  color="primary"
+                  onClick={async () => {
+                    const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
+                      method: "PATCH",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        state: SuitState.LAVANDERIALUCECITASUCIO,
+                      }),
+                    });
+                    if (res.ok) {
+                      toast.success("Traje entregado correctamente");
+                      await fetchSuitToLoundry();
+                    } else {
+                      toast.error("Error al entregar traje");
+                    }
+                  }}
+                >
+                  Lavanderia Lucecita
+                </Button>
+                <Button
+                  size="sm"
+                  color="secondary"
+                  className="max-w-26 min-w-26"
+                  onClick={async () => {
+                    const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
+                      method: "PATCH",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        state: SuitState.LAVANDERIALUCECITASUCIO,
+                      }),
+                    });
+                    if (res.ok) {
+                      toast.success("Traje entregado correctamente");
+                      await fetchSuitToLoundry();
+                    } else {
+                      toast.error("Error al entregar traje");
+                    }
+                  }}
+                >
+                  Lavanderia Celia
+                </Button>
+              </div>
             ),
           };
         })
@@ -157,7 +183,9 @@ export default function Planillas() {
             >
               <TableHeader columns={columns}>
                 {(column) => (
-                  <TableColumn key={column.key}>{column.label}</TableColumn>
+                  <TableColumn className="text-center" key={column.key}>
+                    {column.label}
+                  </TableColumn>
                 )}
               </TableHeader>
               <TableBody
@@ -171,7 +199,9 @@ export default function Planillas() {
                 {(item) => (
                   <TableRow key={item.suit_id}>
                     {(columnKey) => (
-                      <TableCell>{getKeyValue(item, columnKey)}</TableCell>
+                      <TableCell className="text-center">
+                        {getKeyValue(item, columnKey)}
+                      </TableCell>
                     )}
                   </TableRow>
                 )}

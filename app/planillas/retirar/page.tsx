@@ -1,5 +1,11 @@
 "use client";
+import { Booking, BookingState } from "@/lib/utils/Booking";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import { Suit, SuitState } from "@/lib/utils/Suit";
+import { useUserState } from "@/lib/utils/UserState";
 import {
+  Button,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -7,18 +13,11 @@ import {
   TableHeader,
   TableRow,
   getKeyValue,
-  Button,
-  Spinner,
-  useUser,
 } from "@nextui-org/react";
-import { Suit, SuitState } from "@/lib/utils/Suit";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUserState } from "@/lib/utils/UserState";
 import { getCookie } from "cookies-next";
-import { Booking, BookingState } from "@/lib/utils/Booking";
-import { API_BACKEND } from "@/lib/utils/constanst";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function RetirarLavanderia() {
@@ -45,15 +44,11 @@ export default function RetirarLavanderia() {
   >([]);
 
   const fetchSuitsLoundry = async () => {
-    const res = await fetch(`${API_BACKEND}/suit`);
-    const suits = await res.json();
+    const resEnLavIn = await fetch(`${API_BACKEND}/suit/laundry/in`);
+    const resEnLavToTake = await fetch(`${API_BACKEND}/suit/laundry/take`);
 
-    const suitsToTakeLoundry = suits.filter((suit: Suit) => {
-      return suit.state === SuitState.LAVANDERIALIMPIO;
-    });
-    const suitsInLoundry = suits.filter((suit: Suit) => {
-      return suit.state === SuitState.LAVANDERIASUCIO;
-    });
+    const suitsToTakeLoundry = await resEnLavToTake.json();
+    const suitsInLoundry = await resEnLavIn.json();
 
     setSuitInLoundry(
       suitsInLoundry
@@ -83,7 +78,19 @@ export default function RetirarLavanderia() {
           return {
             key: suit.id,
             suit_name: suit.id,
-            suit_color: suit.color,
+            lavanderia: (
+              <div
+                className={
+                  suit.state === SuitState.LAVANDERIALUCECITASUCIO
+                    ? "bg-green-500 p-1 rounded-md w-fit"
+                    : "bg-blue-500 p-1 rounded-md"
+                }
+              >
+                {suit.state === SuitState.LAVANDERIALUCECITASUCIO
+                  ? "Lucecita"
+                  : "Celia"}
+              </div>
+            ),
             soon_booking: soon_booking_date
               ? format(
                   new Date(
@@ -105,7 +112,10 @@ export default function RetirarLavanderia() {
                       "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                      state: SuitState.LAVANDERIALIMPIO,
+                      state:
+                        suit.state === SuitState.LAVANDERIALUCECITASUCIO
+                          ? SuitState.LAVANDERIALUCECITALIMPIO
+                          : SuitState.LAVANDERIACELIALIMPIO,
                     }),
                   });
                   if (res.ok) {
@@ -180,7 +190,19 @@ export default function RetirarLavanderia() {
                   "dd/MM/yyyy"
                 )
               : "No tiene",
-            suit_color: suit.color,
+            lavanderia: (
+              <div
+                className={
+                  suit.state === SuitState.LAVANDERIALUCECITALIMPIO
+                    ? "bg-green-500 p-1 rounded-md w-fit"
+                    : "bg-blue-500 p-1 rounded-md"
+                }
+              >
+                {suit.state === SuitState.LAVANDERIALUCECITALIMPIO
+                  ? "Lucecita"
+                  : "Celia"}
+              </div>
+            ),
             actions: (
               <Button
                 size="sm"
@@ -278,8 +300,8 @@ export default function RetirarLavanderia() {
       label: "Traje",
     },
     {
-      key: "suit_color",
-      label: "Color",
+      key: "lavanderia",
+      label: "Lavanderia",
     },
     { key: "soon_booking", label: "Proxima reserva" },
     { key: "actions", label: "Acciones" },

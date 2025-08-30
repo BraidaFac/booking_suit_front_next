@@ -13,6 +13,8 @@ export const useSuits = () => {
   };
 
   const updateSuit = async (suit: Suit) => {
+    console.log(suit);
+
     const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

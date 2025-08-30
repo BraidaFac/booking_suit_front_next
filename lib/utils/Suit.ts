@@ -13,8 +13,10 @@ export enum SuitState {
   ENLOCALLIMPIO = "ENLOCALLIMPIO",
   LISTOENTREGA = "LISTOENTREGA",
   RETIRADO = "RETIRADO",
-  LAVANDERIALIMPIO = "LAVANDERIALIMPIO",
-  LAVANDERIASUCIO = "LAVANDERIASUCIO",
+  LAVANDERIALUCECITALIMPIO = "LAVANDERIALUCECITALIMPIO",
+  LAVANDERIALUCECITASUCIO = "LAVANDERIALUCECITASUCIO",
+  LAVANDERIACELIALIMPIO = "LAVANDERIACELIALIMPIO",
+  LAVANDERIACELIASUCIO = "LAVANDERIACELIASUCIO",
   MODISTA = "MODISTA",
 }
 
@@ -26,10 +28,14 @@ export function getState(state: SuitState) {
       return "En local limpio";
     case SuitState.RETIRADO:
       return "Retirado";
-    case SuitState.LAVANDERIALIMPIO:
-      return "Lavanderia limpio";
-    case SuitState.LAVANDERIASUCIO:
-      return "Lavanderia sucio";
+    case SuitState.LAVANDERIALUCECITALIMPIO:
+      return "Lavanderia Lucecita limpio";
+    case SuitState.LAVANDERIALUCECITASUCIO:
+      return "Lavanderia Lucecita sucio";
+    case SuitState.LAVANDERIACELIALIMPIO:
+      return "Lavanderia Celia limpio";
+    case SuitState.LAVANDERIACELIASUCIO:
+      return "Lavanderia Celia sucio";
     case SuitState.MODISTA:
       return "Modista";
     case SuitState.LISTOENTREGA:

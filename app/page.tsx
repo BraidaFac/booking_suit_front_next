@@ -1,14 +1,14 @@
-'use client';
-import Calendar from '@/lib/components/Calendar';
-import SideBar from '@/lib/components/SideBar';
-import { useSuitContext } from '@/lib/components/SuitContext';
-import { useSideBarState } from '@/lib/utils/SideBarState';
-import { useUserState } from '@/lib/utils/UserState';
-import { Button, Spinner } from '@nextui-org/react';
-import { getCookie } from 'cookies-next';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { API_BACKEND } from '@/lib/utils/constanst';
+"use client";
+import Calendar from "@/lib/components/Calendar";
+import SideBar from "@/lib/components/SideBar";
+import { useSuitContext } from "@/lib/components/SuitContext";
+import { API_BACKEND } from "@/lib/utils/constanst";
+import { useSideBarState } from "@/lib/utils/SideBarState";
+import { useUserState } from "@/lib/utils/UserState";
+import { Button, Spinner } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { user, setUser } = useUserState();
@@ -18,8 +18,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
     if (res.ok) {
@@ -28,30 +28,30 @@ export default function Home() {
         name: username,
         role: role,
       });
-      if (role === 'LOUNDRY') {
-        router.push('/planillas/retirar');
+      if (role === "LOUNDRY") {
+        router.push("/planillas/retirar");
       }
       setIsLoading(false);
     } else {
       setUser(null);
-      router.push('/login');
+      router.push("/login");
     }
   };
   useEffect(() => {
     setSuit(null);
-    const token_cookie = getCookie('Authorization');
-    const token = token_cookie ? token_cookie.split(' ')[1] : '';
+    const token_cookie = getCookie("Authorization");
+    const token = token_cookie ? token_cookie.split(" ")[1] : "";
+
     if (!token) {
-      router.push('/login');
-      console.log('no token');
+      router.push("/login");
     } else {
       if (!user) {
         (async () => {
           await fetchUser(token);
         })();
       } else {
-        if (user.role === 'LOUNDRY') {
-          router.push('/planillas/retirar');
+        if (user.role === "LOUNDRY") {
+          router.push("/planillas/retirar");
         } else {
           setIsLoading(false);
         }
@@ -74,7 +74,7 @@ export default function Home() {
               setIsOpen(!isOpen);
             }}
           >
-            {isOpen ? 'Ocultar' : 'Trajes'}
+            {isOpen ? "Ocultar" : "Trajes"}
           </Button>
           <SideBar />
           <Calendar />
