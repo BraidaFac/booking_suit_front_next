@@ -1,27 +1,27 @@
 "use client";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableColumn,
-  TableRow,
-  TableCell,
-  getKeyValue,
-  Button,
-  Spinner,
-  Chip,
-  Input,
-} from "@nextui-org/react";
+import ConfirmationModal from "@/lib/components/ConfirmModal";
 import { Booking, BookingState } from "@/lib/utils/Booking";
+import { API_BACKEND } from "@/lib/utils/constanst";
 import { getState, SuitState } from "@/lib/utils/Suit";
-import { useEffect, useRef, useState } from "react";
+import { useUserState } from "@/lib/utils/UserState";
+import {
+  Button,
+  Chip,
+  getKeyValue,
+  Input,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@nextui-org/react";
+import { getCookie } from "cookies-next";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { useUserState } from "@/lib/utils/UserState";
-import { getCookie } from "cookies-next";
-import { API_BACKEND } from "@/lib/utils/constanst";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import ConfirmationModal from "@/lib/components/ConfirmModal";
 
 // Define un tipo para los colores válidos
 type StatusColor = "success" | "danger" | "warning" | "primary";
@@ -30,8 +30,10 @@ type StatusColor = "success" | "danger" | "warning" | "primary";
 const statusColorMap: { [key in SuitState]: StatusColor } = {
   [SuitState.ENLOCALLIMPIO]: "warning",
   [SuitState.ENLOCALSUCIO]: "danger",
-  [SuitState.LAVANDERIALIMPIO]: "danger",
-  [SuitState.LAVANDERIASUCIO]: "danger",
+  [SuitState.LAVANDERIACELIALIMPIO]: "danger",
+  [SuitState.LAVANDERIACELIASUCIO]: "danger",
+  [SuitState.LAVANDERIALUCECITALIMPIO]: "danger",
+  [SuitState.LAVANDERIALUCECITASUCIO]: "danger",
   [SuitState.MODISTA]: "primary",
   [SuitState.RETIRADO]: "primary",
   [SuitState.LISTOENTREGA]: "success",
@@ -126,8 +128,10 @@ export default function Retiros() {
           observation: booking.observations,
           booking_date: format(new Date(booking.booking_date), "dd/MM/yyyy"),
           actions:
-            booking.suit.state === SuitState.LAVANDERIASUCIO ||
-            booking.suit.state === SuitState.LAVANDERIALIMPIO ||
+            booking.suit.state === SuitState.LAVANDERIACELIASUCIO ||
+            booking.suit.state === SuitState.LAVANDERIALUCECITASUCIO ||
+            booking.suit.state === SuitState.LAVANDERIALUCECITALIMPIO ||
+            booking.suit.state === SuitState.LAVANDERIACELIALIMPIO ||
             booking.suit.state === SuitState.RETIRADO ||
             booking.suit.state === SuitState.ENLOCALSUCIO ? (
               <div></div>
