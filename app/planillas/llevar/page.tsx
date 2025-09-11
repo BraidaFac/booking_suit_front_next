@@ -45,7 +45,7 @@ export default function Planillas() {
               <div className="flex flex-row gap-1 justify-center w-1/2 mx-auto">
                 <Button
                   size="sm"
-                  className="max-w-26 min-w-26"
+                  className="md:max-w-26 md:min-w-26 "
                   color="primary"
                   onClick={async () => {
                     const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
@@ -65,12 +65,12 @@ export default function Planillas() {
                     }
                   }}
                 >
-                  Lavanderia Lucecita
+                  Lucecita
                 </Button>
                 <Button
                   size="sm"
                   color="secondary"
-                  className="max-w-26 min-w-26"
+                  className="md:max-w-26 md:min-w-26"
                   onClick={async () => {
                     const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
                       method: "PATCH",
@@ -89,7 +89,7 @@ export default function Planillas() {
                     }
                   }}
                 >
-                  Lavanderia Celia
+                  Celia
                 </Button>
               </div>
             ),
