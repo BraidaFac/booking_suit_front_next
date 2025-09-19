@@ -3,36 +3,36 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/solid/index.js";
-import { Textarea } from "@nextui-org/react";
-import { formatMonth } from "../utils/date_formatter";
+import {
+  Button,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Textarea,
+  useDisclosure,
+} from "@nextui-org/react";
 import {
   add,
   eachDayOfInterval,
   endOfMonth,
   format,
   getDay,
+  isBefore,
+  isSameDay,
   isToday,
   parse,
   startOfToday,
-  isBefore,
-  isSameDay,
 } from "date-fns";
 import { useEffect, useState } from "react";
-import { useSuitContext } from "./SuitContext";
+import toast from "react-hot-toast";
 import { Booking, BookingState } from "../utils/Booking";
 import { SuitState, getState } from "../utils/Suit";
 import { API_BACKEND } from "../utils/constanst";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-  Input,
-} from "@nextui-org/react";
-import toast from "react-hot-toast";
+import { formatMonth } from "../utils/date_formatter";
+import { useSuitContext } from "./SuitContext";
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 } /*  */
@@ -50,9 +50,72 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState<Date>();
   const [selectedBookingToCancel, setSelectedBookingToCancel] =
     useState<Booking>();
-
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking>();
+  // Form state for editing
+  const [formData, setFormData] = useState({
+    client_dni: "",
+    client_name: "",
+    client_phone: "",
+    account_related: "",
+    suit_id: "",
+    color: "",
+    booking_date: "",
+    l_manga: "",
+    l_pierna: "",
+    other_observations: "",
+    tailor: false,
+  });
   //Suit Data
   const { suit, setSuit } = useSuitContext();
+
+  // Handle form input changes
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+  };
+
+  // Initialize form data when editing
+  useEffect(() => {
+    if (isEditing && editingBooking) {
+      setFormData({
+        client_dni: editingBooking.client_dni || "",
+        client_name: editingBooking.client_name || "",
+        client_phone: editingBooking.client_phone || "",
+        account_related: editingBooking.account_related || "",
+        suit_id: editingBooking.suit?.id || suit?.id || "",
+        color: editingBooking.suit?.color || suit?.color || "",
+        booking_date: editingBooking.booking_date
+          ? format(new Date(editingBooking.booking_date), "yyyy-MM-dd")
+          : "",
+        l_manga: editingBooking.l_manga || "",
+        l_pierna: editingBooking.l_pierna || "",
+        other_observations: editingBooking.other_observations || "",
+        tailor: editingBooking?.dressmaker || false,
+      });
+    } else if (!isEditing) {
+      // Reset form for new booking
+      setFormData({
+        client_dni: "",
+        client_name: "",
+        client_phone: "",
+        account_related: "",
+        suit_id: suit?.id || "",
+        color: suit?.color || "",
+        booking_date: selectedDay ? format(selectedDay, "yyyy-MM-dd") : "",
+        l_manga: "",
+        l_pierna: "",
+        other_observations: "",
+        tailor: false,
+      });
+    }
+  }, [isEditing, editingBooking, suit, selectedDay]);
 
   //Booking Data
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -295,19 +358,23 @@ export default function Calendar() {
         onOpenChange={onOpenChange}
         placement="center"
         backdrop="blur"
-        className={`${selectedDay ? "h-5/6" : ""} overflow-auto`}
+        className={`${
+          selectedDay || isEditing ? "h-5/6 rounded-lg overflow-hidden" : ""
+        } overflow-auto`}
         onClose={() => {
           setFormError(false);
           setSelectedDay(undefined);
+          setEditingBooking(undefined);
+          setIsEditing(false);
           setSelectedBookingToCancel(undefined);
         }}
       >
-        <ModalContent>
+        <ModalContent className="rounded-lg overflow-auto">
           {(onClose) =>
-            selectedDay ? (
+            selectedDay || isEditing ? (
               <>
                 <ModalHeader className="flex flex-col gap-1">
-                  Reservar un traje
+                  {isEditing ? "Modificar reserva" : "Reservar un traje"}
                 </ModalHeader>
                 <ModalBody>
                   <form id="booking-form" className="flex flex-col gap-3 ">
@@ -315,61 +382,84 @@ export default function Calendar() {
                       isRequired
                       label="DNI Cliente"
                       name="client_dni"
+                      value={formData.client_dni}
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       isRequired
                       label="Nombre Cliente"
                       name="client_name"
+                      value={formData.client_name}
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       isRequired
                       label="Telefono Cliente"
                       name="client_phone"
+                      value={formData.client_phone}
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       isRequired
                       label="Cuenta asociada"
                       name="account_related"
+                      value={formData.account_related}
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       isRequired
                       label="Traje"
                       name="suit_id"
-                      value={suit.id}
+                      value={formData.suit_id}
+                      disabled
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       isRequired
                       label="Color"
-                      value={suit.color}
+                      name="color"
+                      disabled
+                      value={formData.color}
+                      onChange={handleInputChange}
                       type="text"
                     ></Input>
                     <Input
                       isRequired
                       label="Fecha evento"
-                      value={format(selectedDay, "yyyy-MM-dd")}
                       type="text"
                       name="booking_date"
+                      disabled
+                      value={formData.booking_date}
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       label="Largo Manga"
                       type="text"
                       name="l_manga"
+                      value={formData.l_manga}
+                      onChange={handleInputChange}
                     ></Input>
                     <Input
                       label="Largo Pierna"
                       type="text"
                       name="l_pierna"
+                      value={formData.l_pierna}
+                      onChange={handleInputChange}
                     ></Input>
                     <Textarea
                       label="Observaciones"
-                      name="observations"
+                      name="other_observations"
+                      value={formData.other_observations}
+                      onChange={handleInputChange}
                     ></Textarea>
                     <div className="flex flex-row gap-3 p-2">
                       <label className="text-black ">Modista</label>
                       <input
                         className="w-6 h-6"
                         type="checkbox"
-                        name="dressmaker"
+                        name="tailor"
+                        checked={formData.tailor}
+                        onChange={handleInputChange}
                       />
                     </div>
                     {formError && (
@@ -387,41 +477,42 @@ export default function Calendar() {
                     color="primary"
                     onClick={async (e) => {
                       e.preventDefault();
-                      const form = document.getElementById(
-                        "booking-form"
-                      ) as HTMLFormElement;
-                      if (form) {
-                        const formData = new FormData(form);
-                        const suit_id = formData.get("suit_id");
-                        const booking_date = formData.get("booking_date");
-                        const dressmaker = formData.get("dressmaker")
-                          ? true
-                          : false;
-                        const client_dni = formData.get("client_dni");
-                        const client_name = formData.get("client_name");
-                        const client_phone = formData.get("client_phone");
-                        const observations_form = formData.get("observations");
-                        const l_manga = formData.get("l_manga");
-                        const l_pierna = formData.get("l_pierna");
-                        const account_related = formData.get("account_related");
-                        const observations = `${
-                          l_manga ? "L.Manga: " + l_manga : ""
-                        }\n ${
-                          l_pierna ? "L.Pierna: " + l_pierna : ""
-                        }\n Otros: ${observations_form}`;
-                        console.log(observations);
 
-                        if (
-                          !client_dni ||
-                          !client_name ||
-                          !client_phone ||
-                          !account_related
-                        ) {
-                          setFormError(true);
-                          return;
-                        }
-                        const response = await fetch(`${API_BACKEND}/booking`, {
-                          method: "POST",
+                      // Use formData state instead of FormData from DOM
+                      const {
+                        suit_id,
+                        booking_date,
+                        tailor,
+                        client_dni,
+                        client_name,
+                        client_phone,
+                        other_observations,
+                        l_manga,
+                        l_pierna,
+                        account_related,
+                      } = formData;
+
+                      const observations = `${
+                        l_manga ? "L.Manga: " + l_manga : ""
+                      }\n ${
+                        l_pierna ? "L.Pierna: " + l_pierna : ""
+                      }\n Otros: ${other_observations}`;
+
+                      if (
+                        !client_dni ||
+                        !client_name ||
+                        !client_phone ||
+                        !account_related
+                      ) {
+                        setFormError(true);
+                        return;
+                      }
+                      const response = await fetch(
+                        `${API_BACKEND}/booking/${
+                          isEditing ? editingBooking!.id : ""
+                        }`,
+                        {
+                          method: isEditing ? "PATCH" : "POST",
                           headers: {
                             "Content-Type": "application/json",
                           },
@@ -430,26 +521,36 @@ export default function Calendar() {
                               id: suit_id,
                             },
                             booking_date,
-                            dressmaker,
+                            dressmaker: tailor,
                             client_dni,
                             client_name,
                             client_phone,
                             observations,
                             account_related,
                           }),
-                        });
-                        if (response.status === 201) {
-                          toast.success("Reserva exitosa");
-                          fetchBookingbySuit();
-                          getBusyDays();
-                          onClose();
-                        } else {
-                          toast.error("Fechas solapadas");
                         }
+                      );
+                      if (response.status === 201 || response.status === 200) {
+                        if (isEditing) {
+                          toast.success("Reserva modificada");
+                          setIsEditing(false);
+                          setEditingBooking(undefined);
+                        } else {
+                          toast.success("Reserva exitosa");
+                        }
+                        fetchBookingbySuit();
+                        getBusyDays();
+                        onOpenChange();
+                      } else {
+                        toast.error(
+                          `Error al ${
+                            isEditing ? "modificar" : "crear"
+                          } la reserva`
+                        );
                       }
                     }}
                   >
-                    Reservar
+                    {isEditing ? "Modificar" : "Reservar"}
                   </Button>
                 </ModalFooter>
               </>
@@ -486,7 +587,7 @@ export default function Calendar() {
 
                         setSuit(suit);
                         await fetchBookingbySuit();
-                        onClose();
+                        onOpenChange();
                       } else {
                         toast.error("Error al retirar el traje");
                       }
@@ -523,13 +624,36 @@ export default function Calendar() {
                         const suitUpdated = (await res.json()).suit;
                         setSuit(suitUpdated);
                         await fetchBookingbySuit();
-                        onClose();
+                        onOpenChange();
                       } else {
                         toast.error("Error al devolver el traje");
                       }
                     }}
                   >
                     DEVOLVIO
+                  </Button>
+                  <Button
+                    color="primary"
+                    variant="light"
+                    onPress={async () => {
+                      setIsEditing(true);
+
+                      setEditingBooking({
+                        ...selectedBookingToCancel!,
+                        l_manga: selectedBookingToCancel?.observations
+                          ?.split("\n")[0]
+                          .slice(9),
+                        l_pierna: selectedBookingToCancel?.observations
+                          ?.split("\n")[1]
+                          .slice(11),
+                        other_observations:
+                          selectedBookingToCancel?.observations
+                            ?.split("\n")[2]
+                            .slice(8),
+                      });
+                    }}
+                  >
+                    EDITAR
                   </Button>
                   <Button
                     color="danger"
@@ -547,7 +671,7 @@ export default function Calendar() {
                       if (response.status === 200) {
                         await fetchBookingbySuit();
                         await getBusyDays();
-                        onClose();
+                        onOpenChange();
                         toast.success("Reserva cancelada");
                       } else {
                         toast.error("Error al cancelar la reserva");

@@ -8,12 +8,16 @@ export interface Booking {
   booking_state: BookingState;
   booking_return_suit: Date;
   booking_retired_suit: Date;
+  account_related: string;
   suit: Suit;
   client_dni: string;
   client_name: string;
   client_phone: string;
   observations: string;
   dressmaker: boolean;
+  l_manga?: string;
+  l_pierna?: string;
+  other_observations?: string;
 }
 
 export enum BookingState {
