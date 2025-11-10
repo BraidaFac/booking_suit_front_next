@@ -101,7 +101,7 @@ export default function Retiros() {
       return (
         ((diffDays >= 0 && diffDays <= 8) || diffDays < 0) &&
         booking.booking_state === BookingState.ACTIVED &&
-        booking.suit.state !== SuitState.LISTOENTREGA
+        booking.suit.state !== SuitState.RETIRADO
       );
     });
 
