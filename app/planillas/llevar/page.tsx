@@ -78,7 +78,7 @@ export default function Planillas() {
                         "Content-Type": "application/json",
                       },
                       body: JSON.stringify({
-                        state: SuitState.LAVANDERIALUCECITASUCIO,
+                        state: SuitState.LAVANDERIACELIASUCIO,
                       }),
                     });
                     if (res.ok) {
