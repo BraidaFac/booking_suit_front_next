@@ -99,10 +99,9 @@ export default function Retiros() {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       return (
-        diffDays >= 0 &&
-        diffDays <= 8 &&
+        ((diffDays >= 0 && diffDays <= 8) || diffDays < 0) &&
         booking.booking_state === BookingState.ACTIVED &&
-        booking.suit.state !== SuitState.RETIRADO
+        booking.suit.state !== SuitState.LISTOENTREGA
       );
     });
 
