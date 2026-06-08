@@ -17,6 +17,8 @@ export enum SuitState {
   LAVANDERIALUCECITASUCIO = "LAVANDERIALUCECITASUCIO",
   LAVANDERIACELIALIMPIO = "LAVANDERIACELIALIMPIO",
   LAVANDERIACELIASUCIO = "LAVANDERIACELIASUCIO",
+  LAVANDERIACENTROLIMPIO = "LAVANDERIACENTROLIMPIO",
+  LAVANDERIACENTROSUCIO = "LAVANDERIACENTROSUCIO",
   MODISTA = "MODISTA",
 }
 
@@ -36,6 +38,10 @@ export function getState(state: SuitState) {
       return "Lavanderia Celia limpio";
     case SuitState.LAVANDERIACELIASUCIO:
       return "Lavanderia Celia sucio";
+    case SuitState.LAVANDERIACENTROLIMPIO:
+      return "Lavanderia Centro limpio";
+    case SuitState.LAVANDERIACENTROSUCIO:
+      return "Lavanderia Centro sucio";
     case SuitState.MODISTA:
       return "Modista";
     case SuitState.LISTOENTREGA:

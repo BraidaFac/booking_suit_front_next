@@ -25,7 +25,7 @@ export default function Planillas() {
 
   const [suitsToLoundry, setSuitToLoundry] = useState<
     {
-      suit_id: number;
+      suit_id: string;
       suit_color: string;
       actions: JSX.Element;
     }[]
@@ -45,14 +45,12 @@ export default function Planillas() {
               <div className="flex flex-row gap-1 justify-center w-1/2 mx-auto">
                 <Button
                   size="sm"
-                  className="md:max-w-26 md:min-w-26 "
+                  className="md:max-w-26 md:min-w-26"
                   color="primary"
                   onClick={async () => {
                     const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
                       method: "PATCH",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
+                      headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         state: SuitState.LAVANDERIALUCECITASUCIO,
                       }),
@@ -74,9 +72,7 @@ export default function Planillas() {
                   onClick={async () => {
                     const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
                       method: "PATCH",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
+                      headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         state: SuitState.LAVANDERIACELIASUCIO,
                       }),
@@ -91,6 +87,28 @@ export default function Planillas() {
                 >
                   Celia
                 </Button>
+                <Button
+                  size="sm"
+                  color="warning"
+                  className="md:max-w-26 md:min-w-26"
+                  onClick={async () => {
+                    const res = await fetch(`${API_BACKEND}/suit/${suit.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        state: SuitState.LAVANDERIACENTROSUCIO,
+                      }),
+                    });
+                    if (res.ok) {
+                      toast.success("Traje entregado correctamente");
+                      await fetchSuitToLoundry();
+                    } else {
+                      toast.error("Error al entregar traje");
+                    }
+                  }}
+                >
+                  Centro
+                </Button>
               </div>
             ),
           };
@@ -98,6 +116,7 @@ export default function Planillas() {
       );
     }
   };
+
   const fetchUser = async (token: string) => {
     const res = await fetch(`${API_BACKEND}/auth/validate`, {
       method: "POST",
@@ -106,23 +125,19 @@ export default function Planillas() {
     });
     if (res.ok) {
       const user = await res.json();
-      setUser({
-        name: user.username,
-        role: user.role,
-      });
+      setUser({ name: user.username, role: user.role });
       if (user.role === "LOUNDRY") {
         router.push("/planillas/retirar");
       } else {
-        (async () => {
-          await fetchSuitToLoundry();
-          setIsLoading(false);
-        })();
+        await fetchSuitToLoundry();
+        setIsLoading(false);
       }
     } else {
       setUser(null);
       router.push("/login");
     }
   };
+
   useEffect(() => {
     const token_cookie = getCookie("Authorization");
     const token = token_cookie ? token_cookie.split(" ")[1] : "";
@@ -145,22 +160,18 @@ export default function Planillas() {
       }
     }
   }, []);
+
   const columns = [
-    {
-      key: "suit_id",
-      label: "Traje",
-    },
-    {
-      key: "suit_color",
-      label: "Color",
-    },
+    { key: "suit_id", label: "Traje" },
+    { key: "suit_color", label: "Color" },
     { key: "actions", label: "Acciones" },
   ];
+
   return (
     <>
       {isLoading ? (
         <div className="text-center">
-          <Spinner color="danger"></Spinner>
+          <Spinner color="danger" />
         </div>
       ) : (
         <div>
@@ -171,7 +182,7 @@ export default function Planillas() {
           </div>
           <div className="px-2 mx-auto">
             <Table
-              aria-label="Example table with dynamic content"
+              aria-label="Trajes para llevar a lavanderia"
               isHeaderSticky
               bottomContent={
                 isLoading ? (

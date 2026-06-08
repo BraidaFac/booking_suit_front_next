@@ -34,6 +34,8 @@ const statusColorMap: { [key in SuitState]: StatusColor } = {
   [SuitState.LAVANDERIACELIASUCIO]: "danger",
   [SuitState.LAVANDERIALUCECITALIMPIO]: "danger",
   [SuitState.LAVANDERIALUCECITASUCIO]: "danger",
+  [SuitState.LAVANDERIACENTROLIMPIO]: "danger",
+  [SuitState.LAVANDERIACENTROSUCIO]: "danger",
   [SuitState.MODISTA]: "primary",
   [SuitState.RETIRADO]: "primary",
   [SuitState.LISTOENTREGA]: "success",
@@ -131,6 +133,8 @@ export default function Retiros() {
             booking.suit.state === SuitState.LAVANDERIALUCECITASUCIO ||
             booking.suit.state === SuitState.LAVANDERIALUCECITALIMPIO ||
             booking.suit.state === SuitState.LAVANDERIACELIALIMPIO ||
+            booking.suit.state === SuitState.LAVANDERIACENTROSUCIO ||
+            booking.suit.state === SuitState.LAVANDERIACENTROLIMPIO ||
             booking.suit.state === SuitState.RETIRADO ||
             booking.suit.state === SuitState.ENLOCALSUCIO ? (
               <div></div>
