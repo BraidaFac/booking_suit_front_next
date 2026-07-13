@@ -52,6 +52,7 @@ export default function Calendar() {
     useState<Booking>();
   const [isEditing, setIsEditing] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Form state for editing
   const [formData, setFormData] = useState({
     client_dni: "",
@@ -475,8 +476,11 @@ export default function Calendar() {
                   </Button>
                   <Button
                     color="primary"
+                    isLoading={isSubmitting}
+                    isDisabled={isSubmitting}
                     onClick={async (e) => {
                       e.preventDefault();
+                      if (isSubmitting) return;
 
                       // Use formData state instead of FormData from DOM
                       const {
@@ -507,46 +511,51 @@ export default function Calendar() {
                         setFormError(true);
                         return;
                       }
-                      const response = await fetch(
-                        `${API_BACKEND}/booking/${
-                          isEditing ? editingBooking!.id : ""
-                        }`,
-                        {
-                          method: isEditing ? "PATCH" : "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            suit: {
-                              id: suit_id,
+                      setIsSubmitting(true);
+                      try {
+                        const response = await fetch(
+                          `${API_BACKEND}/booking/${
+                            isEditing ? editingBooking!.id : ""
+                          }`,
+                          {
+                            method: isEditing ? "PATCH" : "POST",
+                            headers: {
+                              "Content-Type": "application/json",
                             },
-                            booking_date,
-                            dressmaker: tailor,
-                            client_dni,
-                            client_name,
-                            client_phone,
-                            observations,
-                            account_related,
-                          }),
-                        }
-                      );
-                      if (response.status === 201 || response.status === 200) {
-                        if (isEditing) {
-                          toast.success("Reserva modificada");
-                          setIsEditing(false);
-                          setEditingBooking(undefined);
-                        } else {
-                          toast.success("Reserva exitosa");
-                        }
-                        fetchBookingbySuit();
-                        getBusyDays();
-                        onOpenChange();
-                      } else {
-                        toast.error(
-                          `Error al ${
-                            isEditing ? "modificar" : "crear"
-                          } la reserva`
+                            body: JSON.stringify({
+                              suit: {
+                                id: suit_id,
+                              },
+                              booking_date,
+                              dressmaker: tailor,
+                              client_dni,
+                              client_name,
+                              client_phone,
+                              observations,
+                              account_related,
+                            }),
+                          }
                         );
+                        if (response.status === 201 || response.status === 200) {
+                          if (isEditing) {
+                            toast.success("Reserva modificada");
+                            setIsEditing(false);
+                            setEditingBooking(undefined);
+                          } else {
+                            toast.success("Reserva exitosa");
+                          }
+                          fetchBookingbySuit();
+                          getBusyDays();
+                          onOpenChange();
+                        } else {
+                          toast.error(
+                            `Error al ${
+                              isEditing ? "modificar" : "crear"
+                            } la reserva`
+                          );
+                        }
+                      } finally {
+                        setIsSubmitting(false);
                       }
                     }}
                   >
