@@ -148,10 +148,11 @@ export default function Calendar() {
     setBookings(data);
   };
 
-  const getBusyDays = async () => {
-    const res = await fetch(`${API_BACKEND}/booking/suit/${suit.id}/fechas`, {
-      method: "GET",
-    });
+  const getBusyDays = async (isDressmaker = false) => {
+    const res = await fetch(
+      `${API_BACKEND}/booking/suit/${suit.id}/fechas?dressmaker=${isDressmaker}`,
+      { method: "GET" }
+    );
     if (!res.ok) {
       toast.error("Error");
       return;
@@ -176,13 +177,20 @@ export default function Calendar() {
     if (suit) {
       try {
         fetchBookingbySuit();
-        getBusyDays();
+        getBusyDays(formData.tailor);
       } catch (error) {
         console.log(error); //TODO
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suit]);
+
+  useEffect(() => {
+    if (suit) {
+      getBusyDays(formData.tailor);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.tailor]);
 
   //Verification of day
   const verifyDay = (day: Date) => {
