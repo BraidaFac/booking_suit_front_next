@@ -123,6 +123,7 @@ export default function Calendar() {
   const [busyDaysLaundry, setBusyDaysLaundry] = useState<Date[]>([]);
   const [busyDaysDressmaker, setBusyDaysDressmaker] = useState<Date[]>([]);
   const [busyDaysPreparation, setBusyDaysPreparation] = useState<Date[]>([]);
+  const [busyDaysShadow, setBusyDaysShadow] = useState<Date[]>([]);
 
   //Calendar functions
   const days = eachDayOfInterval({
@@ -171,6 +172,8 @@ export default function Calendar() {
       return new Date(day);
     });
     setBusyDaysPreparation(busyDaysPreparation);
+    const busyDaysShadow = (data.shadow ?? []).map((day: any) => new Date(day));
+    setBusyDaysShadow(busyDaysShadow);
   };
 
   useEffect(() => {
@@ -191,6 +194,25 @@ export default function Calendar() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.tailor]);
+
+  const getDayStatus = (day: Date): { bg: string; label: string | null } => {
+    if (isToday(day)) return { bg: "bg-blue-400", label: null };
+    if (bookings.some((b) => isSameDay(day, new Date(b.booking_date))))
+      return { bg: "bg-red-500", label: null };
+    if (busyDaysPreparation.some((d) => isSameDay(day, d))) {
+      const isDressmaker = busyDaysDressmaker.some((d) => isSameDay(day, d));
+      return {
+        bg: "bg-amber-500",
+        label: isDressmaker ? "Modista / Preparación" : "Preparación",
+      };
+    }
+    if (busyDaysLaundry.some((d) => isSameDay(day, d)))
+      return { bg: "bg-cyan-700", label: "Lavandería" };
+    if (busyDaysShadow.some((d) => isSameDay(day, d)))
+      return { bg: "bg-gray-500", label: "Sin margen" };
+    if (isFuture(day)) return { bg: "bg-green-400", label: null };
+    return { bg: "", label: null };
+  };
 
   //Verification of day
   const verifyDay = (day: Date) => {
@@ -263,7 +285,15 @@ export default function Calendar() {
                 >
                   <button
                     onClick={() => {
-                      //TODO VERIFICAR FECHAS DISPONIBLES
+                      const isShadow = busyDaysShadow.some((s) =>
+                        isSameDay(day, s)
+                      );
+                      if (isShadow && bookings.filter((b) => isSameDay(day, new Date(b.booking_date))).length === 0) {
+                        toast.error(
+                          "No hay margen suficiente para completar el ciclo de lavandería antes de la siguiente reserva"
+                        );
+                        return;
+                      }
                       verifyDay(day);
                       onOpen();
                     }}
@@ -285,25 +315,8 @@ export default function Calendar() {
                     }
                     type="button"
                     className={classNames(
-                      "text-white",
-                      isToday(day) && "text-white",
-                      !isToday(day) && "text-gray-900",
-                      "font-semibold",
-                      isFuture(day) && "bg-green-400",
-                      bookings.filter((booking) =>
-                        isSameDay(day, new Date(booking.booking_date))
-                      ).length > 0 && "bg-red-400",
-                      busyDaysDressmaker.filter((busyDay) =>
-                        isSameDay(day, new Date(busyDay))
-                      ).length > 0 && "bg-yellow-400",
-                      busyDaysLaundry.filter((busyDay) =>
-                        isSameDay(day, new Date(busyDay))
-                      ).length > 0 && "bg-yellow-400",
-                      busyDaysPreparation.filter((busyDay) =>
-                        isSameDay(day, new Date(busyDay))
-                      ).length > 0 && "bg-yellow-400",
-                      "w-full  h-full flex flex-col justify-center",
-                      isToday(day) && "bg-blue-400"
+                      "text-white font-semibold w-full h-full flex flex-col justify-center",
+                      getDayStatus(day).bg
                     )}
                   >
                     <div className="self-center">
@@ -321,39 +334,11 @@ export default function Calendar() {
                             <p>{booking.client_phone}</p>
                           </div>
                         ))}
-                      {busyDaysDressmaker
-                        .filter((busyDay) => isSameDay(day, busyDay))
-                        .map((booking) => (
-                          <div
-                            className="self-center hidden"
-                            key={day.toISOString()}
-                          >
-                            {" "}
-                            MODISTA
-                          </div>
-                        ))}
-
-                      {busyDaysLaundry
-                        .filter((busyDay) => isSameDay(day, busyDay))
-                        .map(() => (
-                          <div
-                            className="self-center hidden"
-                            key={day.toISOString()}
-                          >
-                            LAVANDERIA
-                          </div>
-                        ))}
-                      {busyDaysPreparation
-                        .filter((busyDay) => isSameDay(day, busyDay))
-                        .map(() => (
-                          <div
-                            className="self-center hidden"
-                            key={day.toISOString()}
-                          >
-                            {" "}
-                            EN LOCAL
-                          </div>
-                        ))}
+                      {getDayStatus(day).label && (
+                        <p className="text-xs text-white mt-1">
+                          {getDayStatus(day).label}
+                        </p>
+                      )}
                     </div>
                   </button>
                 </div>
@@ -554,6 +539,8 @@ export default function Calendar() {
                           }
                           fetchBookingbySuit();
                           getBusyDays();
+                          setSelectedDay(undefined);
+                          setSelectedBookingToCancel(undefined);
                           onOpenChange();
                         } else {
                           toast.error(
